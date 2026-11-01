@@ -122,13 +122,9 @@ Scope {
         interval: Config.s.lockAnim ? 420 : 0
         onTriggered: {
             const cmd = root.session.exec.split(/\s+/).filter(x => x !== "");
-            // Without systemd there's no user D-Bus, so the session gets its own
-            // (like "dbus-run-session start-hyprland" from a tty). On systemd
-            // machines, or when the session already handles it, run it as is.
-            const wrap = "if [ -d /run/systemd/system ] || [ \"$1\" = dbus-run-session ] || [ \"$1\" = uwsm ]; " +
-                         "then exec \"$@\"; else exec dbus-run-session \"$@\"; fi";
-            // through env + sh so it works on every Quickshell version
-            Greetd.launch(["env", "XDG_SESSION_TYPE=wayland", "sh", "-c", wrap, "sh"].concat(cmd));
+            // greetd joins this into one shell line, so it must stay plain words:
+            // session.sh adds D-Bus (without systemd) and logs to ~/.cache/island-session.log
+            Greetd.launch(["/etc/greetd/island/session.sh"].concat(cmd));
         }
     }
 

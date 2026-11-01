@@ -70,7 +70,7 @@ cp "$island/services/Clock.qml" "$dest/services/"
 chown -R root:root "$dest"
 find "$dest" -type d -exec chmod 755 {} +
 find "$dest" -type f -exec chmod 644 {} +
-chmod 755 "$dest/run.sh" "$dest/start-mango.sh"
+chmod 755 "$dest/run.sh" "$dest/start-mango.sh" "$dest/session.sh"
 
 # the part you own: this machine's settings + media (island-greeter-sync)
 mkdir -p "$dest/user/files"
