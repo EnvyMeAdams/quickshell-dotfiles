@@ -128,5 +128,5 @@ else
 	say "Test from a tty that isn't running a desktop (Ctrl+Alt+F2):"
 	say "  doas greetd --config /etc/greetd/island-test.toml   (opens on Ctrl+Alt+F8)"
 	say "  If it says XDG_RUNTIME_DIR is not set, test with the service instead:"
-	say "  doas ./install.sh --enable && doas rc-service greetd start"
+	say "  doas ./greeter/install.sh --enable && doas rc-service greetd start"
 fi
