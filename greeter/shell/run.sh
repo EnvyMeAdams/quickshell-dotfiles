@@ -15,6 +15,10 @@ elif command -v mmsg >/dev/null 2>&1; then
     mmsg -s -d quit >/dev/null 2>&1 || mmsg dispatch quit >/dev/null 2>&1
 fi
 sleep 2
+# helpers the compositor or Quickshell started for this account (portals,
+# a D-Bus they autolaunched) would otherwise outlive the login screen
+pkill -U "$(id -u)" -f '/usr/libexec/xdg-desktop-portal' 2>/dev/null
+pkill -U "$(id -u)" -x dbus-daemon 2>/dev/null
 # last resort: only this account's own compositor
 pkill -U "$(id -u)" -x Hyprland 2>/dev/null
 pkill -U "$(id -u)" -x mango 2>/dev/null
