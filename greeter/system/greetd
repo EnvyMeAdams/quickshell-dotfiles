@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+# Only needed if your greetd package didn't install /etc/init.d/greetd.
+description="greetd login manager"
+supervisor=supervise-daemon
+command=/usr/bin/greetd
+command_args="--config /etc/greetd/config.toml"
+respawn_delay=2
+respawn_max=5
+
+depend() {
+	need localmount
+	after bootmisc elogind dbus
+	use dbus
+	provide display-manager
+}

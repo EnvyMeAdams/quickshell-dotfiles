@@ -1,0 +1,10 @@
+# per-machine and generated files never belong here
+__pycache__/
+*.pyc
+*.part
+*.bak
+*.bak-*
+.DS_Store
+# in case someone copies their synced login-screen data in
+greeter/shell/user/
+settings.json
