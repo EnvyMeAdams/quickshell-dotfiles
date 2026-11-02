@@ -4,6 +4,9 @@ description="greetd login manager"
 supervisor=supervise-daemon
 command=/usr/bin/greetd
 command_args="--config /etc/greetd/config.toml"
+# greetd's own messages, to see why it stopped if it ever does
+output_log=/var/log/greetd.log
+error_log=/var/log/greetd.log
 respawn_delay=2
 respawn_max=5
 

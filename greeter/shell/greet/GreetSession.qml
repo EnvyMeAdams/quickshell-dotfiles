@@ -107,6 +107,13 @@ Scope {
         function onAuthFailure(message) { root.reset("wrong"); }
         function onError(error) {
             console.warn("greeter: greetd error:", error);
+            // greetd itself is gone (it restarted or crashed): this login screen can
+            // never sign anyone in again, so close it and let greetd start a fresh one
+            if (/refused|os error (111|2|32|104)|broken pipe|no such file|reset by peer/i.test(error)) {
+                root.reset("error", "Login service restarted, reloading…");
+                reload.restart();
+                return;
+            }
             Greetd.cancelSession();
             root.reset("error", error);
         }
@@ -116,6 +123,9 @@ Scope {
             launchTimer.restart();          // let the animation play: greetd wants us gone soon after
         }
     }
+
+    // quits Quickshell; run.sh then closes the compositor and greetd starts a new login screen
+    Timer { id: reload; interval: 1500; onTriggered: Qt.quit() }
 
     Timer {
         id: launchTimer
