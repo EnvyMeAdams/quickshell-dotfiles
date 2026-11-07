@@ -9,6 +9,11 @@ Row {
     spacing: 8
     property real maxWidth: 260
 
+    // never draw a half-made battery chip: if the Battery service isn't
+    // available (it failed to load, or Quickshell hasn't picked it up yet)
+    // the chip simply isn't created
+    readonly property bool batteryShown: { try { return Battery.shown === true; } catch (e) { return false; } }
+
     // tray is loaded at runtime, so a Quickshell built without SystemTray
     // just shows no tray instead of failing to start
     Loader {
@@ -20,39 +25,47 @@ Row {
     Binding {
         target: tray.item
         property: "maxWidth"
-        value: bar.maxWidth - (battery.visible ? battery.width + bar.spacing : 0)
+        value: bar.maxWidth - (battery.item ? battery.width + bar.spacing : 0)
         when: tray.status === Loader.Ready
     }
 
-    Card {
+    Loader {
         id: battery
-        visible: Battery.shown
+        active: bar.batteryShown
+        visible: active
         anchors.verticalCenter: parent.verticalCenter
-        width: batRow.implicitWidth + 18 + offset
-        height: 30 + offset
-        offset: 3
-        radius: 15
-        fill: Battery.charging ? Theme.pastels.green
-            : Battery.percent <= 15 ? Theme.pastels.pink
-            : Battery.percent <= 30 ? Theme.pastels.butter : Theme.card
+        sourceComponent: batteryChip
+    }
 
-        Row {
-            id: batRow
-            anchors.centerIn: parent
-            spacing: 3
-            PIcon {
-                name: Battery.icon
-                size: 17
-                rotation: 90
-                color: (Battery.charging || Battery.percent <= 30) ? Theme.onPastel : Theme.ink
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            PText {
-                text: Battery.percent + "%"
-                font.bold: true
-                font.pixelSize: 12
-                color: (Battery.charging || Battery.percent <= 30) ? Theme.onPastel : Theme.ink
-                anchors.verticalCenter: parent.verticalCenter
+    Component {
+        id: batteryChip
+        Card {
+            width: batRow.implicitWidth + 18 + offset
+            height: 30 + offset
+            offset: 3
+            radius: 15
+            fill: Battery.charging ? Theme.pastels.green
+                : Battery.percent <= 15 ? Theme.pastels.pink
+                : Battery.percent <= 30 ? Theme.pastels.butter : Theme.card
+
+            Row {
+                id: batRow
+                anchors.centerIn: parent
+                spacing: 3
+                PIcon {
+                    name: Battery.icon
+                    size: 17
+                    rotation: 90
+                    color: (Battery.charging || Battery.percent <= 30) ? Theme.onPastel : Theme.ink
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+                PText {
+                    text: Battery.percent + "%"
+                    font.bold: true
+                    font.pixelSize: 12
+                    color: (Battery.charging || Battery.percent <= 30) ? Theme.onPastel : Theme.ink
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
         }
     }
