@@ -120,6 +120,9 @@ Singleton {
             property bool pauseForMedia: true
             property bool pauseForCalls: true
             property bool pauseForFullscreen: true
+            property bool lockWaitsForMusic: false
+            property int awakeGrace: 30              // seconds to keep waiting after a video/call ends
+            property var awakeApps: [{ "app": "firefox", "when": "sound" }]
             property int idleVersion: 0
             property bool lockMedia: true
             property bool saverClock: true
@@ -140,7 +143,13 @@ Singleton {
             property string searchEngine: ""          // your own, e.g. a SearXNG ".../search?q="
             property string backupEngine: "https://duckduckgo.com/?q="
 
+            // Home
+            property string showBattery: "auto"      // auto | on | off
+            property bool showTray: true
+            property bool powerConfirm: true
+
             // Commands
+            property string logoutCmd: ""            // empty = automatic for your compositor
             property string lockCmd: ""              // fallback only; empty = hyprlock or swaylock
             property string sleepCmd: "loginctl suspend"
             property string rebootCmd: "loginctl reboot"

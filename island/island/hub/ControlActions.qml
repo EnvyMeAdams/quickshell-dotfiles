@@ -26,7 +26,7 @@ Singleton {
         if (kind === "lock") { LockState.lock(); return; }
         if (kind === "saver") { saverDelay.restart(); return; }
         run(({ sleep: Config.s.sleepCmd, reboot: Config.s.rebootCmd,
-               poweroff: Config.s.poweroffCmd })[kind]);
+               poweroff: Config.s.poweroffCmd, logout: Compositor.logoutCmd() })[kind]);
     }
     // small delay so the click that started it doesn't instantly end it
     Timer { id: saverDelay; interval: 400; onTriggered: LockState.startSaver() }

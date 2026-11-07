@@ -65,6 +65,13 @@ Singleton {
         const auto = "sh '" + scripts + "/screenshot.sh' " + (mode || "region");
         return pick(Config.s.screenshotCmd, "hyprshot -m region", auto) || auto;
     }
+    function logoutCmd() {
+        const u = (Config.s.logoutCmd ?? "").trim();
+        if (u) return u;
+        if (kind === "hyprland") return "hyprctl dispatch exit";
+        if (kind === "mango") return "mmsg -d quit";
+        return "loginctl terminate-session \"${XDG_SESSION_ID:-self}\"";
+    }
     function nightCmd(on) {
         return on ? pick(Config.s.nightOnCmd, "hyprsunset -t 4500", "wlsunset -T 4501 -t 4500")
                   : pick(Config.s.nightOffCmd, "pkill -x hyprsunset", "pkill -x wlsunset");

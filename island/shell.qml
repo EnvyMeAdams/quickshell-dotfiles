@@ -11,7 +11,7 @@ ShellRoot {
     id: root
 
     // make sure background services start even before anything is shown
-    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake]
+    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery]
 
     Variants {
         model: Quickshell.screens
@@ -70,6 +70,7 @@ ShellRoot {
             Quickshell.execDetached(["sh", "-c", Compositor.screenshotCmd(mode || "region")]);
         }
 
+        function logout(): void { ControlActions.power("logout"); }
         function awake(): void { Awake.keepAwake = !Awake.keepAwake; }
         function record(): void { Recorder.toggle(); }
         function recordRegion(): void { Recorder.toggle("region"); }

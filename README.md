@@ -157,7 +157,8 @@ tty login.
 | Night Light | Hyprland: hyprsunset · others: wlsunset |
 | Recording | wf-recorder, slurp (region), pipewire-pulse (`pactl`) |
 | Wallpaper accent | Quickshell with ColorQuantizer |
-| Laptop extras | brightnessctl, bluez |
+| Laptop extras | brightnessctl, bluez (battery is read from `/sys`, nothing to install) |
+| Tray | Quickshell with SystemTray (hidden if your build lacks it) |
 | Login screen | greetd, python3, polkit (for its power buttons) |
 
 Screenshot and Night Light pick the right tool for your compositor. Leave

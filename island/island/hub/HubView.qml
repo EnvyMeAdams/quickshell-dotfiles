@@ -49,6 +49,32 @@ Item {
         }
     }
 
+    // Home only: power buttons on the left, tray + battery on the right
+    readonly property bool home: Island.hubTab === "home"
+    readonly property real side: (width - tabRow.width) / 2 - 14 - 10
+
+    PowerBar {
+        z: 5
+        anchors.left: parent.left
+        anchors.leftMargin: 14
+        anchors.verticalCenter: tabRow.verticalCenter
+        anchors.verticalCenterOffset: -1
+        opacity: root.home ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: Theme.dur(160) } }
+    }
+    StatusBar {
+        z: 5
+        anchors.right: parent.right
+        anchors.rightMargin: 14
+        anchors.verticalCenter: tabRow.verticalCenter
+        anchors.verticalCenterOffset: -1
+        maxWidth: root.side
+        opacity: root.home ? 1 : 0
+        visible: opacity > 0
+        Behavior on opacity { NumberAnimation { duration: Theme.dur(160) } }
+    }
+
     Loader {
         anchors.top: tabRow.bottom
         anchors.topMargin: 12

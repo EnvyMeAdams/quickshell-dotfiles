@@ -21,8 +21,10 @@ Item {
           opts: ["Popups", "Popup Time", "Focus"] },
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
           opts: ["Visualizer", "Bars", "Camera Light"] },
+        { label: "Home", icon: "home", tint: Theme.pastels.peach, comp: homeSetC,
+          opts: ["Battery", "Tray", "Confirm Power"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
-          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock"] },
+          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
           opts: ["Mic", "Desktop Sound", "Mode", "FPS", "Folder"] },
         { label: "Wallpaper", icon: "image", tint: Theme.pastels.sand, comp: wallpaperC,
@@ -32,7 +34,7 @@ Item {
         { label: "Launcher", icon: "search", tint: Theme.pastels.peach, comp: launcherC,
           opts: ["File Search", "Engine", "Backup"] },
         { label: "Commands", icon: "terminal", tint: Theme.pastels.green, comp: commandsC,
-          opts: ["Sleep", "Reboot", "Power", "Screenshot", "Night On", "Night Off"] },
+          opts: ["Log Out", "Sleep", "Reboot", "Power", "Screenshot", "Night On", "Night Off"] },
         { label: "Shortcuts", icon: "keyboard", tint: Theme.pastels.yellow, comp: shortcutsC,
           opts: ["How to Bind"] },
         { label: "About", icon: "info", tint: Theme.pastels.rose, comp: aboutC,
@@ -200,6 +202,24 @@ Item {
         }
     }
     Component {
+        id: awakeAppsC
+        AwakeAppsPage {}
+    }
+    Component {
+        id: homeSetC
+        SPage {
+            title: "Home"
+            SChoice {
+                label: "Battery"
+                hint: Battery.present ? "Battery found: " + Battery.percent + "%" : "No battery found"
+                key: "showBattery"
+                options: [{ v: "auto", l: "Auto" }, { v: "on", l: "On" }, { v: "off", l: "Off" }]
+            }
+            SToggle { label: "Tray"; hint: "App icons, top right"; key: "showTray" }
+            SToggle { label: "Confirm Power"; hint: "Click twice for Log Out, Reboot, Power"; key: "powerConfirm" }
+        }
+    }
+    Component {
         id: lockC
         SPage {
             title: "Lock & Saver"
@@ -209,6 +229,15 @@ Item {
             SToggle { label: "Wait for Media"; hint: "Music or video playing"; key: "pauseForMedia" }
             SToggle { label: "Wait for Calls"; hint: "Mic or camera in use"; key: "pauseForCalls" }
             SToggle { label: "Wait for Fullscreen"; hint: "Games, fullscreen video"; key: "pauseForFullscreen" }
+            SLink {
+                icon: "apps"
+                label: "Apps"
+                hint: (Config.s.awakeApps ?? []).map(r => r.app).join(", ") || "None"
+                tint: Theme.pastels.butter
+                onClicked: stack.push(awakeAppsC)
+            }
+            SSlider { label: "Grace"; hint: "Keep waiting after it ends"; key: "awakeGrace"; from: 0; to: 120; step: 5; suffix: "s" }
+            SToggle { label: "Lock Waits for Music"; key: "lockWaitsForMusic" }
             SRow {
                 label: "Right Now"
                 hint: Awake.reason ? "Waiting: " + Awake.reason : "Counting down"
@@ -324,6 +353,7 @@ Item {
         id: commandsC
         SPage {
             title: "Commands"
+            SText { label: "Log Out"; key: "logoutCmd"; fieldWidth: 380; placeholder: Compositor.logoutCmd() }
             SText { label: "Sleep"; key: "sleepCmd"; fieldWidth: 380 }
             SText { label: "Reboot"; key: "rebootCmd"; fieldWidth: 380 }
             SText { label: "Power"; key: "poweroffCmd"; fieldWidth: 380 }

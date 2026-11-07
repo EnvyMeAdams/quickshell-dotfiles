@@ -127,17 +127,6 @@ Item {
             }
         }
 
-        Row {
-            width: parent.width
-            spacing: 12
-            readonly property real bw: Math.floor((width - 48) / 5)
-
-            PowerButton { width: parent.bw; icon: "lock"; label: "Lock"; kind: "lock"; tint: Theme.pastels.blue }
-            PowerButton { width: parent.bw; icon: "movie"; label: "Saver"; kind: "saver"; tint: Theme.pastels.green }
-            PowerButton { width: parent.bw; icon: "dark_mode"; label: "Sleep"; kind: "sleep"; tint: Theme.pastels.lilac }
-            PowerButton { width: parent.bw; icon: "restart_alt"; label: "Reboot"; kind: "reboot"; confirm: true; tint: Theme.pastels.peach }
-            PowerButton { width: parent.bw; icon: "power_settings_new"; label: "Power"; kind: "poweroff"; confirm: true; tint: Theme.pastels.pink }
-        }
     }
 
     WifiPanel {

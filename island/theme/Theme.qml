@@ -70,6 +70,6 @@ Singleton {
         notif:      Qt.size(460, 104),
         launcher:   Qt.size(600, 440),
         windows:    Qt.size(760, 176),
-        hub:        Qt.size(780, 520)
+        hub:        Qt.size(880, 520)
     })
 }
