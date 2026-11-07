@@ -10,6 +10,7 @@ greetd. Works on **Hyprland** and **MangoWM**.
 ```
 island/     the dynamic island (Quickshell config)
 greeter/    the login screen: the island's lock screen, signing you in through greetd
+setup.sh    one-line installer (curl … | sh)
 install.sh  links island/ into ~/.config/quickshell
 ```
 
@@ -29,8 +30,37 @@ Pulling an update never touches any of these.
 
 ## Install the island
 
+Copy and paste this into a terminal (as yourself, not root):
+
 ```sh
-git clone git@github.com:<you>/quickshell-dotfiles.git ~/quickshell-dotfiles
+curl -fsSL https://raw.githubusercontent.com/EnvyMeAdams/quickshell-dotfiles/main/setup.sh | sh
+```
+
+It downloads the repo to `~/quickshell-dotfiles`, links `island/` to
+`~/.config/quickshell` (backing up what's there), lists any missing
+dependencies and restarts Quickshell. Run the same line again to update.
+
+With the login screen too:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/EnvyMeAdams/quickshell-dotfiles/main/setup.sh | sh -s -- --greeter --enable
+```
+
+| Option | Does |
+|---|---|
+| `--greeter` | also install the login screen (asks for doas/sudo) |
+| `--enable` | with `--greeter`: start the login screen at boot |
+| `--mango` | with `--greeter`: run the login screen in MangoWM |
+| `--dir PATH` | keep the repo somewhere else |
+| `--no-start` | don't restart Quickshell at the end |
+
+If you've changed files in the repo, it won't update over them; it tells you
+instead.
+
+### Install by hand
+
+```sh
+git clone https://github.com/EnvyMeAdams/quickshell-dotfiles.git ~/quickshell-dotfiles
 cd ~/quickshell-dotfiles
 ./install.sh            # links island/ to ~/.config/quickshell (backs up what's there)
 quickshell              # or restart it if it's already running
