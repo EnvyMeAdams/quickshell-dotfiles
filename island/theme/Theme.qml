@@ -62,9 +62,11 @@ Singleton {
 
     // every pill shape in one table — content is laid out at these sizes,
     // so nothing reflows or jumps while the pill morphs
+    readonly property bool battery: { try { return Battery.shown === true; } catch (e) { return false; } }
+    readonly property int batteryW: battery ? 58 : 0
     readonly property var sizes: ({
-        idle:       Qt.size(250, 38),
-        nowplaying: Qt.size(400, 38),
+        idle:       Qt.size(250 + batteryW, 38),
+        nowplaying: Qt.size(400 + batteryW, 38),
         workspace:  Qt.size(300, 38),
         volume:     Qt.size(380, 60),
         notif:      Qt.size(460, 104),

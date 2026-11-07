@@ -99,5 +99,6 @@ Item {
             font.pixelSize: 11
             anchors.verticalCenter: parent.verticalCenter
         }
+        PillBattery { anchors.verticalCenter: parent.verticalCenter }
     }
 }

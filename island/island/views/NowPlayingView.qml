@@ -47,40 +47,69 @@ Item {
 
     Row {
         id: controls
-        anchors.right: clock.left
-        anchors.rightMargin: 10
+        anchors.right: sep.left
+        anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         spacing: 2
 
         Repeater {
+            // skip buttons fall back to -10 s / +10 s when the app has no
+            // previous/next track (YouTube in Firefox, single videos, …)
             model: [
-                { icon: "skip_previous", act: () => root.p?.previous() },
-                { icon: Media.playing ? "pause" : "play_arrow", act: () => root.p?.togglePlaying() },
-                { icon: "skip_next", act: () => root.p?.next() }
+                { icon: Media.canPrev ? "skip_previous" : "replay_10", ok: Media.canPrev || Media.canSeekNow, act: () => Media.prev() },
+                { icon: Media.playing ? "pause" : "play_arrow", ok: true, act: () => Media.toggle() },
+                { icon: Media.canNext ? "skip_next" : "forward_10", ok: Media.canNext || Media.canSeekNow, act: () => Media.next() }
             ]
             delegate: PIcon {
+                id: btn
                 required property var modelData
                 name: modelData.icon
                 size: 18
-                width: 22
-                height: 22
+                width: 24
+                height: 24
+                opacity: modelData.ok ? (area.containsMouse ? 1 : 0.85) : 0.3
+                scale: area.pressed ? 0.85 : 1
+                Behavior on scale { NumberAnimation { duration: 80 } }
                 MouseArea {
+                    id: area
                     anchors.fill: parent
+                    anchors.margins: -3
+                    hoverEnabled: true
+                    enabled: btn.modelData.ok
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: parent.modelData.act()
+                    // swallow the press so the pill underneath doesn't open the hub
+                    acceptedButtons: Qt.LeftButton
+                    onClicked: btn.modelData.act()
                 }
             }
         }
     }
 
     Rectangle {
-        anchors.right: clock.left
-        anchors.rightMargin: 5
+        id: sep
+        anchors.right: rightBox.left
+        anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
         width: 1.5
         height: 16
         color: Theme.line
         opacity: 0.4
+    }
+
+    Row {
+        id: rightBox
+        anchors.right: parent.right
+        anchors.rightMargin: 12
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 8
+        PillBattery { anchors.verticalCenter: parent.verticalCenter }
+        PText {
+            id: clock
+            text: Clock.hm + (Clock.ampm ? " " + Clock.ampm : "")
+            font.pixelSize: 12
+            font.bold: true
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 
     Rectangle {
@@ -93,15 +122,5 @@ Item {
         border.width: 1.5
         border.color: Theme.line
         z: 2
-    }
-
-    PText {
-        id: clock
-        anchors.right: parent.right
-        anchors.rightMargin: 12
-        anchors.verticalCenter: parent.verticalCenter
-        text: Clock.hm + (Clock.ampm ? " " + Clock.ampm : "")
-        font.pixelSize: 12
-        font.bold: true
     }
 }

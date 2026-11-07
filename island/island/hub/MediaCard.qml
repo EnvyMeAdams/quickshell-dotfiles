@@ -124,15 +124,15 @@ Card {
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: 10
-                PButton { icon: "skip_previous"; faceHeight: 34; onClicked: root.p?.previous() }
+                PButton { icon: Media.canPrev ? "skip_previous" : "replay_10"; faceHeight: 34; onClicked: Media.prev() }
                 PButton {
                     icon: Media.playing ? "pause" : "play_arrow"
                     faceHeight: 34; pad: 16
                     checked: true
                     tint: Theme.pastels.pink
-                    onClicked: root.p?.togglePlaying()
+                    onClicked: Media.toggle()
                 }
-                PButton { icon: "skip_next"; faceHeight: 34; onClicked: root.p?.next() }
+                PButton { icon: Media.canNext ? "skip_next" : "forward_10"; faceHeight: 34; onClicked: Media.next() }
             }
         }
     }

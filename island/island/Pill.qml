@@ -70,7 +70,7 @@ Item {
         cursorShape: Qt.PointingHandCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         onClicked: m => {
-            if (m.button === Qt.MiddleButton) { Media.player?.togglePlaying(); return; }
+            if (m.button === Qt.MiddleButton) { Media.toggle(); return; }
             if (m.button === Qt.RightButton) { Island.toggleHub("control"); return; }
             Island.toggleHub(root.view === "notif" ? "notifications"
                            : root.view === "volume" ? "sound" : "home");

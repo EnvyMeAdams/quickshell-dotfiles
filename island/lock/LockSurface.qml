@@ -313,9 +313,9 @@ Item {
                 anchors.rightMargin: 14
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 6
-                PButton { icon: "skip_previous"; faceHeight: 30; offset: 3; pad: 4; onClicked: Media.player?.previous() }
-                PButton { icon: Media.playing ? "pause" : "play_arrow"; faceHeight: 30; offset: 3; pad: 8; checked: true; tint: Theme.pastels.pink; onClicked: Media.player?.togglePlaying() }
-                PButton { icon: "skip_next"; faceHeight: 30; offset: 3; pad: 4; onClicked: Media.player?.next() }
+                PButton { icon: Media.canPrev ? "skip_previous" : "replay_10"; faceHeight: 30; offset: 3; pad: 4; onClicked: Media.prev() }
+                PButton { icon: Media.playing ? "pause" : "play_arrow"; faceHeight: 30; offset: 3; pad: 8; checked: true; tint: Theme.pastels.pink; onClicked: Media.toggle() }
+                PButton { icon: Media.canNext ? "skip_next" : "forward_10"; faceHeight: 30; offset: 3; pad: 4; onClicked: Media.next() }
             }
         }
 
