@@ -68,7 +68,10 @@ Singleton {
     function logoutCmd() {
         const u = (Config.s.logoutCmd ?? "").trim();
         if (u) return u;
-        if (kind === "hyprland") return "hyprctl dispatch exit";
+        // Lua-config Hyprland (0.5x) only takes the hl.dsp form; hyprshutdown closes apps first
+        if (kind === "hyprland")
+            return "command -v hyprshutdown >/dev/null && exec hyprshutdown; " +
+                   "hyprctl dispatch 'hl.dsp.exit()' | grep -q ok || hyprctl dispatch exit";
         if (kind === "mango") return "mmsg -d quit";
         return "loginctl terminate-session \"${XDG_SESSION_ID:-self}\"";
     }
