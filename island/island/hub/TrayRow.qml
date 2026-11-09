@@ -62,24 +62,39 @@ Card {
                 opacity: cell.modelData.status === Status.Passive ? 0.5 : 1
             }
 
+            // the app's own right-click menu, opened just under the icon
+            QsMenuAnchor {
+                id: menu
+                menu: cell.modelData.menu
+                anchor.item: cell
+                anchor.edges: Edges.Bottom
+                anchor.gravity: Edges.Bottom
+            }
+
             MouseArea {
                 id: area
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
                 cursorShape: Qt.PointingHandCursor
                 hoverEnabled: true
+                // a tiny drag shouldn't turn a click into a scroll of the row
+                preventStealing: true
                 onClicked: m => {
                     const item = cell.modelData;
-                    if (m.button === Qt.MiddleButton) { item.secondaryActivate(); return; }
-                    if (m.button === Qt.RightButton || item.onlyMenu) {
-                        if (item.hasMenu) {
-                            const p = cell.mapToItem(null, 0, cell.height + 6);
-                            item.display(QsWindow.window, p.x, p.y);
+                    try {
+                        if (m.button === Qt.MiddleButton) {
+                            item.secondaryActivate();
+                        } else if (m.button === Qt.RightButton || item.onlyMenu) {
+                            if (item.hasMenu) menu.open();
+                            else item.activate();      // no menu: treat as a normal click
+                        } else {
+                            item.activate();
+                            // let the app receive the click before the hub closes
+                            Qt.callLater(Island.close);
                         }
-                        return;
+                    } catch (e) {
+                        console.warn("tray: click on", item.id, "failed:", e);
                     }
-                    item.activate();
-                    Island.close();
                 }
                 onWheel: w => cell.modelData.scroll(w.angleDelta.y, false)
             }
