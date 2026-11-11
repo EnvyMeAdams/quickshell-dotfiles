@@ -75,8 +75,12 @@ Singleton {
         if (kind === "mango") return "mmsg -d quit";
         return "loginctl terminate-session \"${XDG_SESSION_ID:-self}\"";
     }
+    // {temp} = Settings → Display → Warmth (lower = redder)
     function nightCmd(on) {
-        return on ? pick(Config.s.nightOnCmd, "hyprsunset -t 4500", "wlsunset -T 4501 -t 4500")
-                  : pick(Config.s.nightOffCmd, "pkill -x hyprsunset", "pkill -x wlsunset");
+        const k = Math.round(Config.s.nightTemp || 3500);
+        const cmd = on ? pick(Config.s.nightOnCmd, "pkill -x hyprsunset; hyprsunset -t {temp}",
+                              "pkill -x wlsunset; wlsunset -T {temp1} -t {temp}")
+                       : pick(Config.s.nightOffCmd, "pkill -x hyprsunset", "pkill -x wlsunset");
+        return cmd.split("{temp1}").join(String(k + 1)).split("{temp}").join(String(k));
     }
 }

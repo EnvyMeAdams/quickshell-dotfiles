@@ -22,8 +22,8 @@ Item {
         if (Config.s.nowPlayingInPill && Media.active) return "nowplaying";
         return "idle";
     }
-    readonly property bool clickToOpen: ["idle", "nowplaying", "workspace", "volume", "notif"].includes(view)
-    readonly property bool roundPill: ["idle", "nowplaying", "workspace", "volume"].includes(view)
+    readonly property bool clickToOpen: ["idle", "nowplaying", "workspace", "volume", "brightness", "notif"].includes(view)
+    readonly property bool roundPill: ["idle", "nowplaying", "workspace", "volume", "brightness"].includes(view)
     readonly property size target: Theme.sizes[view]
     property string shown: view
 
@@ -73,7 +73,8 @@ Item {
             if (m.button === Qt.MiddleButton) { Media.toggle(); return; }
             if (m.button === Qt.RightButton) { Island.toggleHub("control"); return; }
             Island.toggleHub(root.view === "notif" ? "notifications"
-                           : root.view === "volume" ? "sound" : "home");
+                           : root.view === "volume" ? "sound"
+                           : root.view === "brightness" ? "control" : "home");
         }
         onWheel: w => {
             if (!Config.s.pillScrollVolume) { w.accepted = false; return; }
@@ -136,7 +137,7 @@ Item {
                 width: Theme.sizes[root.shown].width - Theme.outline * 2
                 height: Theme.sizes[root.shown].height - Theme.outline * 2
                 sourceComponent: ({
-                    idle: idleC, nowplaying: nowC, workspace: wsC, volume: volC,
+                    idle: idleC, nowplaying: nowC, workspace: wsC, volume: volC, brightness: brightC,
                     notif: notifC, launcher: launcherC, hub: hubC, windows: windowsC
                 })[root.shown] ?? idleC
             }
@@ -147,6 +148,7 @@ Item {
     Component { id: nowC; NowPlayingView {} }
     Component { id: wsC; WorkspaceView { screenName: root.screenName } }
     Component { id: volC; VolumeView {} }
+    Component { id: brightC; BrightnessView {} }
     Component { id: notifC; NotifToast {} }
     Component { id: launcherC; LauncherView {} }
     Component { id: hubC; HubView {} }

@@ -157,6 +157,8 @@ tty login.
 | Night Light | Hyprland: hyprsunset · others: wlsunset |
 | Recording | wf-recorder, slurp (region), pipewire-pulse (`pactl`) |
 | Wallpaper accent | Quickshell with ColorQuantizer |
+| Brightness | brightnessctl (laptop); ddcutil + i2c-dev for desktop monitors (optional) |
+| Night light | hyprsunset (Hyprland) or wlsunset (MangoWM) |
 | Laptop extras | brightnessctl, bluez (battery is read from `/sys`, nothing to install) |
 | Tray | Quickshell with SystemTray (hidden if your build lacks it) |
 | Login screen | greetd, python3, polkit (for its power buttons) |

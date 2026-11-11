@@ -11,7 +11,7 @@ ShellRoot {
     id: root
 
     // make sure background services start even before anything is shown
-    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery]
+    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions]
 
     Variants {
         model: Quickshell.screens
@@ -64,6 +64,8 @@ ShellRoot {
         function lock(): void { LockState.lock(); }
         function saver(): void { LockState.startSaver(); }
         function screensaver(): void { LockState.startSaver(); }
+        function brightnessUp(): void { Brightness.nudge(0.05); }
+        function brightnessDown(): void { Brightness.nudge(-0.05); }
         function micmute(): void { Audio.toggleMic(); }
         function nightlight(): void { ControlActions.toggleNight(); }
         function screenshot(mode: string): void {

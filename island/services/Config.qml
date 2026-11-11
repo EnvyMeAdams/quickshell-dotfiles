@@ -159,6 +159,9 @@ Singleton {
             property string nightOnCmd: ""
             property string nightOffCmd: ""
             property bool nightLight: false
+            property int nightTemp: 3500             // Kelvin: 1500 very red … 6000 barely warm
+            property bool osdBrightness: true
+            property bool ddcBrightness: true        // desktop monitors via ddcutil
         }
     }
 }

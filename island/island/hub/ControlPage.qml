@@ -119,10 +119,20 @@ Item {
                 SliderRow {
                     width: parent.width
                     visible: Brightness.available
-                    icon: "light_mode"
+                    icon: Brightness.icon
                     value: Brightness.value
                     tint: Theme.pastels.yellow
                     onMoved: v => Brightness.set(v)
+                }
+                // warmth only matters while night light is on
+                SliderRow {
+                    width: parent.width
+                    visible: Config.s.nightLight
+                    icon: "bedtime"
+                    value: ControlActions.warmth
+                    tint: Theme.pastels.coral
+                    onMoved: v => ControlActions.setWarmth(v)
+                    onIconClicked: ControlActions.toggleNight()
                 }
             }
         }

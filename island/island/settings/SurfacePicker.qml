@@ -3,19 +3,22 @@ import qs.services
 import qs.theme
 import qs.components
 
-// Four mini previews: each shows its own surface with a few pastel buttons.
+// Mini previews in two rows: light looks on top, mid and dark below.
+// Each tile draws its own surface with a few pastel buttons.
 Item {
     id: root
     width: parent ? parent.width : 500
-    height: 128
+    readonly property int tileH: 128
+    height: tileH * 2 + 12
 
     readonly property var list: [
-        { v: "cream", l: "Cream" }, { v: "fog", l: "Fog" },
-        { v: "slate", l: "Slate" }, { v: "cocoa", l: "Cocoa" }
+        { v: "cream", l: "Cream" }, { v: "fog", l: "Fog" }, { v: "blush", l: "Blush" }, { v: "matcha", l: "Matcha" },
+        { v: "lilac", l: "Lilac" }, { v: "slate", l: "Slate" }, { v: "midnight", l: "Midnight" }, { v: "cocoa", l: "Cocoa" }
     ]
 
-    Row {
+    Grid {
         anchors.fill: parent
+        columns: 4
         spacing: 12
         readonly property real w: Math.floor((width - 36) / 4)
 
@@ -27,7 +30,7 @@ Item {
                 readonly property var m: Theme.modes[modelData.v]
                 readonly property bool on: Config.s.surface === modelData.v
                 width: parent.w
-                height: root.height
+                height: root.tileH
 
                 // shadow + face drawn with this surface's own colours
                 Rectangle {

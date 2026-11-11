@@ -15,11 +15,19 @@ Singleton {
                  ink: "#1d1b1a", sub: "#6c6763", line: "#1d1b1a", shade: "#1d1b1a" },
         slate: { base: "#58565a", card: "#67646a", sunk: "#4a484d", hover: "#716e74",
                  ink: "#f7f3ef", sub: "#ddd6d3", line: "#1b1a1d", shade: "#1b1a1d" },
+        blush: { base: "#f3dcdd", card: "#f9e9e8", sunk: "#ebcccd", hover: "#f3dedd",
+                 ink: "#22181a", sub: "#7d6064", line: "#22181a", shade: "#22181a" },
+        matcha: { base: "#dde5d1", card: "#ebf0e2", sunk: "#ccd7bd", hover: "#e1e8d6",
+                  ink: "#1a1f17", sub: "#5f6c55", line: "#1a1f17", shade: "#1a1f17" },
+        lilac: { base: "#e3dcef", card: "#efeaf7", sunk: "#d3c9e6", hover: "#e6e0f1",
+                 ink: "#1d1a24", sub: "#685f7a", line: "#1d1a24", shade: "#1d1a24" },
+        midnight: { base: "#232838", card: "#2d3346", sunk: "#1b1f2c", hover: "#363d53",
+                    ink: "#eef0f8", sub: "#aab1c8", line: "#0b0d14", shade: "#0b0d14" },
         cocoa: { base: "#2a2421", card: "#342c28", sunk: "#221d1a", hover: "#3d3430",
                  ink: "#f1e3d6", sub: "#b3a194", line: "#0e0b0a", shade: "#0e0b0a" }
     })
     readonly property var m: modes[Config.s.surface] ?? modes.cream
-    readonly property bool dark: Config.s.surface === "slate" || Config.s.surface === "cocoa"
+    readonly property bool dark: ["slate", "cocoa", "midnight"].includes(Config.s.surface)
 
     readonly property color base:  m.base
     readonly property color card:  m.card
@@ -69,6 +77,7 @@ Singleton {
         nowplaying: Qt.size(400 + batteryW, 38),
         workspace:  Qt.size(300, 38),
         volume:     Qt.size(380, 60),
+        brightness: Qt.size(420, 60),
         notif:      Qt.size(460, 104),
         launcher:   Qt.size(600, 440),
         windows:    Qt.size(760, 176),

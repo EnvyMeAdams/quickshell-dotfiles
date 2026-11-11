@@ -23,6 +23,8 @@ Item {
           opts: ["Visualizer", "Bars", "Camera Light"] },
         { label: "Home", icon: "home", tint: Theme.pastels.peach, comp: homeSetC,
           opts: ["Battery", "Tray", "Confirm Power"] },
+        { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
+          opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
           opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
@@ -347,6 +349,50 @@ Item {
             SToggle { label: "File Search"; hint: "Start with /"; key: "launcherFiles" }
             SText { label: "Engine"; hint: "Your server, ends in ?q="; key: "searchEngine"; fieldWidth: 360; placeholder: "https://…/search?q=" }
             SText { label: "Backup"; hint: "If Engine is down, and ! bangs"; key: "backupEngine"; fieldWidth: 360 }
+        }
+    }
+    Component {
+        id: displayC
+        SPage {
+            title: "Display"
+            SRow {
+                label: "Brightness"
+                hint: Brightness.mode === "ddc" ? "Monitors over DDC" : Brightness.available ? "" : "Nothing to control found"
+                PSlider {
+                    width: 220
+                    anchors.verticalCenter: parent.verticalCenter
+                    enabled: Brightness.available
+                    value: Brightness.value
+                    tint: Theme.pastels.butter
+                    onMoved: v => Brightness.set(v)
+                }
+                PText { width: 44; horizontalAlignment: Text.AlignRight; anchors.verticalCenter: parent.verticalCenter; text: Math.round(Brightness.value * 100) + "%"; font.bold: true; font.pixelSize: 12 }
+            }
+            SRow {
+                label: "Night Light"
+                PToggle {
+                    anchors.verticalCenter: parent.verticalCenter
+                    checked: Config.s.nightLight
+                    tint: Theme.pastels.coral
+                    onToggled: ControlActions.toggleNight()
+                }
+            }
+            SRow {
+                label: "Warmth"
+                hint: Config.s.nightLight ? "Changes live" : "Turn Night Light on to preview"
+                PText { anchors.verticalCenter: parent.verticalCenter; text: "Cool"; font.pixelSize: 11; color: Theme.sub }
+                PSlider {
+                    width: 200
+                    anchors.verticalCenter: parent.verticalCenter
+                    value: ControlActions.warmth
+                    tint: Theme.pastels.coral
+                    onMoved: v => ControlActions.setWarmth(v)
+                }
+                PText { anchors.verticalCenter: parent.verticalCenter; text: "Red"; font.pixelSize: 11; color: Theme.sub }
+                PText { width: 52; horizontalAlignment: Text.AlignRight; anchors.verticalCenter: parent.verticalCenter; text: Config.s.nightTemp + "K"; font.bold: true; font.pixelSize: 12 }
+            }
+            SToggle { label: "Brightness Popup"; hint: "Show changes in the pill"; key: "osdBrightness" }
+            SToggle { label: "Desktop Monitors"; hint: "Uses ddcutil (restart to apply)"; key: "ddcBrightness" }
         }
     }
     Component {
