@@ -374,7 +374,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     checked: Config.s.nightLight
                     tint: Theme.pastels.coral
-                    onToggled: ControlActions.toggleNight()
+                    onToggled: NightLight.toggle()
                 }
             }
             SRow {
@@ -384,9 +384,9 @@ Item {
                 PSlider {
                     width: 200
                     anchors.verticalCenter: parent.verticalCenter
-                    value: ControlActions.warmth
+                    value: NightLight.warmth
                     tint: Theme.pastels.coral
-                    onMoved: v => ControlActions.setWarmth(v)
+                    onMoved: v => NightLight.setWarmth(v)
                 }
                 PText { anchors.verticalCenter: parent.verticalCenter; text: "Red"; font.pixelSize: 11; color: Theme.sub }
                 PText { width: 52; horizontalAlignment: Text.AlignRight; anchors.verticalCenter: parent.verticalCenter; text: Config.s.nightTemp + "K"; font.bold: true; font.pixelSize: 12 }

@@ -54,6 +54,6 @@ Item {
         icon: "bedtime"
         checked: Config.s.nightLight
         tint: Theme.pastels.coral
-        onClicked: ControlActions.toggleNight()
+        onClicked: NightLight.toggle()
     }
 }

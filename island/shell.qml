@@ -11,7 +11,7 @@ ShellRoot {
     id: root
 
     // make sure background services start even before anything is shown
-    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions]
+    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight]
 
     Variants {
         model: Quickshell.screens
@@ -67,7 +67,7 @@ ShellRoot {
         function brightnessUp(): void { Brightness.nudge(0.05); }
         function brightnessDown(): void { Brightness.nudge(-0.05); }
         function micmute(): void { Audio.toggleMic(); }
-        function nightlight(): void { ControlActions.toggleNight(); }
+        function nightlight(): void { NightLight.toggle(); }
         function screenshot(mode: string): void {
             Quickshell.execDetached(["sh", "-c", Compositor.screenshotCmd(mode || "region")]);
         }

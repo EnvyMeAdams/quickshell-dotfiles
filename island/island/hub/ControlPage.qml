@@ -55,7 +55,7 @@ Item {
                 sub: Config.s.nightLight ? "On" : "Off"
                 active: Config.s.nightLight
                 tint: Theme.pastels.yellow
-                onClicked: ControlActions.toggleNight()
+                onClicked: NightLight.toggle()
             }
             Tile {
                 width: root.tileW
@@ -129,10 +129,10 @@ Item {
                     width: parent.width
                     visible: Config.s.nightLight
                     icon: "bedtime"
-                    value: ControlActions.warmth
+                    value: NightLight.warmth
                     tint: Theme.pastels.coral
-                    onMoved: v => ControlActions.setWarmth(v)
-                    onIconClicked: ControlActions.toggleNight()
+                    onMoved: v => NightLight.setWarmth(v)
+                    onIconClicked: NightLight.toggle()
                 }
             }
         }

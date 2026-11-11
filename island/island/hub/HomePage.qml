@@ -123,7 +123,7 @@ Item {
                 text: "Night"
                 checked: Config.s.nightLight
                 tint: Theme.pastels.yellow
-                onClicked: ControlActions.toggleNight()
+                onClicked: NightLight.toggle()
             }
         }
     }
