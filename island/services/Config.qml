@@ -45,6 +45,11 @@ Singleton {
             // gap follows the island (like the old island did)
             if (adapter.darkMode) { adapter.surface = "cocoa"; adapter.darkMode = false; }
             if (adapter.layoutVersion < 1) { adapter.reserveAll = false; adapter.layoutVersion = 1; }
+            // old builds saved their default night light commands into settings,
+            // which then overrode the Warmth slider; clear those (not your own)
+            const oldNight = ["hyprsunset -t 4500", "pkill -x hyprsunset", "wlsunset -T 4501 -t 4500", "pkill -x wlsunset"];
+            if (oldNight.includes((adapter.nightOnCmd ?? "").trim())) adapter.nightOnCmd = "";
+            if (oldNight.includes((adapter.nightOffCmd ?? "").trim())) adapter.nightOffCmd = "";
         }
 
         JsonAdapter {

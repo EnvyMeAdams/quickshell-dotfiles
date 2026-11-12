@@ -33,7 +33,9 @@ Singleton {
         if (worker.running) { pending = true; return; }
         pending = false;
         if (custom) {
-            worker.command = ["sh", "-c", Compositor.nightCmd(on)];
+            // a custom command may keep running (like "hyprsunset -t 4500"), so
+            // start it in the background; otherwise the queue would wait forever
+            worker.command = ["sh", "-c", "setsid sh -c \"$1\" >/dev/null 2>&1 & sleep 0.3", "sh", Compositor.nightCmd(on)];
         } else {
             worker.command = ["sh", Compositor.scripts + "/night.sh", on ? "on" : "off", String(temp), Compositor.kind];
         }
@@ -41,8 +43,11 @@ Singleton {
     }
     Process {
         id: worker
+        onRunningChanged: if (running) watchdog.restart(); else watchdog.stop()
         onExited: if (root.pending) root.queue()
     }
+    // never let one stuck change block every later one
+    Timer { id: watchdog; interval: 4000; onTriggered: if (worker.running) worker.signal(15) }
 
     // put it back after a restart/login if it was on
     Timer { interval: 2000; running: true; onTriggered: if (root.on) root.queue() }

@@ -404,8 +404,8 @@ Item {
             SText { label: "Reboot"; key: "rebootCmd"; fieldWidth: 380 }
             SText { label: "Power"; key: "poweroffCmd"; fieldWidth: 380 }
             SText { label: "Screenshot"; key: "screenshotCmd"; fieldWidth: 380; placeholder: "Automatic: " + Compositor.screenshotCmd("region").replace(/^sh '.*\//, "").replace(/'/g, "") }
-            SText { label: "Night On"; key: "nightOnCmd"; fieldWidth: 380; placeholder: "Automatic: " + Compositor.nightCmd(true) }
-            SText { label: "Night Off"; key: "nightOffCmd"; fieldWidth: 380; placeholder: "Automatic: " + Compositor.nightCmd(false) }
+            SText { label: "Night On"; hint: "Leave empty to use Warmth; {temp} = Warmth in K"; key: "nightOnCmd"; fieldWidth: 380; placeholder: "Automatic" }
+            SText { label: "Night Off"; key: "nightOffCmd"; fieldWidth: 380; placeholder: "Automatic" }
         }
     }
     Component {
