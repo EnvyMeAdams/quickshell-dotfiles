@@ -45,6 +45,28 @@ ShellRoot {
         LockState.sessionReady = LockState.lockError === "";
         LockState.idleError = loadOptional("lock/Idle.qml");
         LockState.idleReady = LockState.idleError === "";
+        missingCheck.start();
+    }
+
+    // After an update that adds a new service file, Quickshell's live reload
+    // doesn't always pick it up, and the features using it silently do nothing.
+    // Spot that and say so instead of failing quietly.
+    Timer {
+        id: missingCheck
+        interval: 3000
+        onTriggered: {
+            const missing = [];
+            try { NightLight.on; } catch (e) { missing.push("Night Light"); }
+            try { Brightness.available; } catch (e) { missing.push("Brightness"); }
+            try { Battery.present; } catch (e) { missing.push("Battery"); }
+            try { Awake.saverBlocked; } catch (e) { missing.push("Keep Awake"); }
+            try { Recorder.recording; } catch (e) { missing.push("Recording"); }
+            if (missing.length > 0) {
+                console.warn("island: not loaded:", missing.join(", "));
+                Quickshell.execDetached(["notify-send", "-a", "Island", "Restart Quickshell to finish updating",
+                    missing.join(", ") + " didn't load. Run: pkill -x quickshell; quickshell -d"]);
+            }
+        }
     }
 
     // Bind keys with:  quickshell ipc call island <name>
