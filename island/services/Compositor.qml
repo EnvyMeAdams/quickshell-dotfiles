@@ -7,7 +7,7 @@ import Quickshell.Wayland
 // of the island never talks to Hyprland or MangoWM directly.
 //
 //   Hyprland  compositor/Hypr.qml   workspaces, focused display, global shortcuts
-//   MangoWM   compositor/Mango.qml  tags (via mmsg), focused display
+//   MangoWM   compositor/Mango.qml  tags + focused display (mmsg watch, mango 0.18+)
 //   other     no workspaces; the focused display follows the active window
 //
 // Windows, focus and fullscreen use the standard Wayland window list
@@ -72,7 +72,7 @@ Singleton {
         if (kind === "hyprland")
             return "command -v hyprshutdown >/dev/null && exec hyprshutdown; " +
                    "hyprctl dispatch 'hl.dsp.exit()' | grep -q ok || hyprctl dispatch exit";
-        if (kind === "mango") return "mmsg -d quit";
+        if (kind === "mango") return "mmsg dispatch quit";
         return "loginctl terminate-session \"${XDG_SESSION_ID:-self}\"";
     }
     // {temp} = Settings → Display → Warmth (lower = redder)

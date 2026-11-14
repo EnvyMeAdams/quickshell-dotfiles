@@ -184,6 +184,24 @@ def desktop():
     return ""
 
 
+def mango_files(path=MANGO_CONF, seen=None):
+    """~/.config/mango/config.conf plus every file it sources, in order."""
+    seen = seen if seen is not None else []
+    path = os.path.realpath(os.path.expanduser(path))
+    if path in seen or not os.path.isfile(path):
+        return seen
+    seen.append(path)
+    for l in read(path).splitlines():
+        # mango drops "# ..." after a space as a comment
+        m = re.match(r"\s*source(?:_optional)?\s*=\s*(.+?)\s*$", re.sub(r"\s#.*", "", l))
+        if m:
+            p = os.path.expanduser(m.group(1))
+            if not os.path.isabs(p):
+                p = os.path.join(os.path.dirname(path), p)
+            mango_files(p, seen)
+    return seen
+
+
 def hypr_monitors():
     """This machine's Hyprland monitor setup as Lua."""
     for f in HYPR_FILES[:2]:
@@ -220,9 +238,10 @@ def sync_compositor(out):
     """Monitor layout and cursor, so the login screen matches this machine's desktop."""
     write_text("monitors.lua", hypr_monitors())
 
-    # MangoWM: monitor rules + cursor lines from your mango config
-    keep = [l.strip() for l in read(MANGO_CONF).splitlines()
-            if re.match(r"\s*(monitorrule|cursor_theme|cursor_size)\s*=", l)]
+    # MangoWM: monitor rules + cursor lines from your mango config (and the
+    # files it pulls in with source= / source_optional=)
+    keep = [l.strip() for f in mango_files() for l in read(f).splitlines()
+            if re.match(r"\s*(monitor_rule|cursor_theme|cursor_size|xkb_rules_\w+)\s*=", l)]
     write_text("mango.conf", "\n".join(keep) + "\n" if keep else "")
 
     cur = cursor()
@@ -241,7 +260,7 @@ def stamp():
         parts.append(os.path.getmtime(SRC))
         with open(SRC) as f:
             s = json.load(f)
-        paths = [s.get("lockBg"), s.get("avatar") or "~/.face", MANGO_CONF] + HYPR_FILES
+        paths = [s.get("lockBg"), s.get("avatar") or "~/.face"] + mango_files() + HYPR_FILES
         paths += [e.get("path") for e in (s.get("desktop") or {}).values() if isinstance(e, dict)]
         for p in paths:
             p = expand(p)

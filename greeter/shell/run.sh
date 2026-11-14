@@ -12,7 +12,7 @@ if [ -n "$HYPRLAND_INSTANCE_SIGNATURE" ]; then
     else hyprctl dispatch 'hl.dsp.exit()' >/dev/null 2>&1 || hyprctl dispatch exit >/dev/null 2>&1
     fi
 elif command -v mmsg >/dev/null 2>&1; then
-    mmsg -s -d quit >/dev/null 2>&1 || mmsg dispatch quit >/dev/null 2>&1
+    mmsg dispatch quit >/dev/null 2>&1
 fi
 sleep 2
 # helpers the compositor or Quickshell started for this account (portals,
