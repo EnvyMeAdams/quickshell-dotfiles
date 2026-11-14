@@ -144,7 +144,7 @@ tty login.
 | Feature | Needs |
 |---|---|
 | Core | quickshell, pipewire + wireplumber, Hyprland or MangoWM |
-| MangoWM tags | `mmsg` (comes with mango) |
+| MangoWM tags | `mmsg` (comes with mango 0.18+) |
 | Fonts | JetBrains Mono (icons are bundled in `island/assets/fonts`) |
 | Network | NetworkManager (`nmcli`) |
 | Visualizer | cava |
