@@ -182,6 +182,7 @@ Singleton {
 
             // Messages: Signal (signal-cli) and Fluxer
             property bool signalOn: false
+            property bool signalKeepChats: true      // save chats so they survive restarts
             property string signalAccount: ""        // your number, e.g. +15551234567 (set by linking)
             property bool signalDaemon: true         // the island starts signal-cli itself
             property string signalCli: "signal-cli"

@@ -9,7 +9,7 @@ import qs.island.settings
 Item {
     id: root
 
-    readonly property var c: Messages.open ? (Signal.convs[Messages.open] ?? null) : null
+    readonly property var c: Messages.open ? Signal.snapshot(Messages.open, Signal.rev) : null
     property bool helpOpen: false
     property real picked: -1                 // timestamp of the bubble showing reactions
 
@@ -63,12 +63,12 @@ Item {
                     width: parent.width
                     font.bold: true
                     text: !Signal.installed ? "signal-cli isn't installed (system or Flatpak)"
-                        : !Signal.enabled ? "Signal isn't linked yet" : "Connecting…"
+                        : !Signal.on ? "Signal isn't linked yet" : "Connecting…"
                 }
                 PText {
                     width: parent.width
                     visible: text !== ""
-                    text: Signal.enabled ? Signal.status : ""
+                    text: Signal.on ? Signal.status : ""
                     wrapMode: Text.Wrap
                     font.pixelSize: 11
                     color: Theme.sub
@@ -97,7 +97,7 @@ Item {
                 visible: Signal.list.length === 0
                 width: parent.width
                 wrapMode: Text.Wrap
-                text: "New messages show up here. (Older chats stay on your phone.)"
+                text: "New messages show up here and stay after restarts. (Chats from before linking stay on your phone.)"
                 color: Theme.sub
                 font.pixelSize: 12
             }
@@ -230,9 +230,10 @@ Item {
                 clip: true
                 spacing: 6
                 boundsBehavior: Flickable.StopAtBounds
-                model: root.c?.msgs ?? []
-                onCountChanged: Qt.callLater(positionViewAtEnd)
-                Component.onCompleted: positionViewAtEnd()
+                // newest first, laid out from the bottom up: the latest message is
+                // always at the bottom without any scrolling (no jumps on redraw)
+                verticalLayoutDirection: ListView.BottomToTop
+                model: root.c ? root.c.msgs.slice().reverse() : []
 
                 delegate: Item {
                     id: b
@@ -241,7 +242,7 @@ Item {
                     readonly property bool showPick: root.picked === modelData.ts
                     readonly property var reacts: Object.values(modelData.reactions ?? {})
                     width: bubbles.width
-                    height: bub.height + (reacts.length ? 14 : 0) + (showPick ? 36 : 0) + (root.c?.group && !mine ? 14 : 0)
+                    height: bub.height + (reacts.length || modelData.failed ? 14 : 0) + (showPick ? 36 : 0) + (root.c?.group && !mine ? 14 : 0)
 
                     PText {
                         id: who
@@ -258,7 +259,9 @@ Item {
                         height: txt.implicitHeight + 16
                         x: b.mine ? bubbles.width - width - 4 : 4
                         radius: 14
-                        color: b.mine ? "#3a76f0" : Theme.card
+                        color: b.mine ? (b.modelData.failed ? Theme.danger : "#3a76f0") : Theme.card
+                        opacity: b.modelData.pending ? 0.55 : 1
+                        Behavior on opacity { NumberAnimation { duration: Theme.dur(200) } }
                         border.width: b.mine ? 0 : Math.max(1, Theme.outline - 0.5)
                         border.color: Theme.line
                         PText {
@@ -276,6 +279,16 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.picked = b.showPick ? -1 : b.modelData.ts
                         }
+                    }
+                    // couldn't send: say so under the bubble
+                    PText {
+                        visible: !!b.modelData.failed
+                        anchors.top: bub.bottom
+                        anchors.topMargin: 2
+                        x: bub.x + bub.width - width - 4
+                        text: "Not sent"
+                        font.pixelSize: 10
+                        color: Theme.danger
                     }
                     // reactions under the bubble
                     Text {

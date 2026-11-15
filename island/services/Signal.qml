@@ -6,12 +6,14 @@ import Quickshell.Io
 // Signal through signal-cli, as a linked device of your phone (like Signal
 // Desktop). The island starts `signal-cli daemon --socket` itself and talks
 // JSON-RPC over that socket: messages in, replies/reactions/read receipts out.
-// Messages live in memory only; nothing is written to disk by the island.
+// Chats are saved to ~/.local/share/island/signal-chats.json (folder only you
+// can open) so they survive restarts; turn Keep Chats off to keep them in
+// memory only.
 // Settings › Messages › Signal links the device and shows the steps.
 Singleton {
     id: root
 
-    readonly property bool enabled: Config.s.signalOn && Config.s.signalAccount !== ""
+    readonly property bool on: Config.s.signalOn && Config.s.signalAccount !== ""
     // signal-cli can be a normal install or the Flathub one (org.asamk.SignalCli);
     // the island finds whichever is there. Flatpak is sandboxed, so its socket
     // lives in the one runtime folder both sides can see, and its keys live
@@ -29,6 +31,7 @@ Singleton {
     property bool connected: sock.connected
     property string status: ""              // last thing worth telling you (errors, "Connected")
     property var convs: ({})                // key -> conversation
+    property int rev: 0                     // bumps on every change, so views redraw
     readonly property var list: Object.values(convs).sort((a, b) => b.last - a.last)
     readonly property int unread: list.reduce((n, c) => n + c.unread, 0)
     property var contacts: ({})             // number/uuid -> name
@@ -38,7 +41,9 @@ Singleton {
     signal incoming(string key, var msg)
 
     // ── is signal-cli there? ──
+    function detect() { if (!probe.running) probe.running = true; }
     Process {
+        id: probe
         running: true
         command: ["sh", "-c", "if command -v \"$1\" >/dev/null; then echo native; " +
                               "elif command -v flatpak >/dev/null && flatpak info \"$2\" >/dev/null 2>&1; then echo flatpak; fi",
@@ -47,7 +52,7 @@ Singleton {
     }
 
     // ── the daemon (unless you run your own) ──
-    property bool daemonWanted: enabled && installed && Config.s.signalDaemon && !linking
+    property bool daemonWanted: on && installed && Config.s.signalDaemon && !linking
     Process {
         id: daemon
         running: root.daemonWanted
@@ -90,17 +95,19 @@ Singleton {
         id: reconnect
         interval: 2000
         repeat: true
-        running: root.enabled && !sock.connected
+        running: root.on && !sock.connected
         onTriggered: sock.connected = true
     }
 
     // ── JSON-RPC ──
     property int nextId: 1
     property var pending: ({})
-    function call(method, params, done) {
+    property var failing: ({})
+    function call(method, params, done, fail) {
         if (!sock.connected) { status = "Not connected"; return false; }
         const id = nextId++;
         if (done) pending[id] = done;
+        if (fail) failing[id] = fail;
         // single-account daemon (started with -a), so no "account" in params
         sock.write(JSON.stringify({ jsonrpc: "2.0", method: method, params: params, id: id }) + "\n");
         sock.flush();
@@ -110,9 +117,10 @@ Singleton {
         let m;
         try { m = JSON.parse(line); } catch (e) { return; }
         if (m.id !== undefined && m.id !== null) {
-            const done = pending[m.id];
+            const done = pending[m.id], fail = failing[m.id];
             delete pending[m.id];
-            if (m.error) status = m.error.message ?? "signal-cli error";
+            delete failing[m.id];
+            if (m.error) { status = m.error.message ?? "signal-cli error"; if (fail) fail(m.error); }
             else if (done) done(m.result);
             return;
         }
@@ -168,7 +176,79 @@ Singleton {
                                                       msgs: [], unread: 0, last: 0, typing: false }, init);
         return convs[key];
     }
-    function touch() { convs = Object.assign({}, convs); }
+    function touch() { convs = Object.assign({}, convs); rev++; if (Config.s.signalKeepChats) saveLater.restart(); }
+
+    // ── keeping chats across restarts ──
+    readonly property string chatFile: (Quickshell.env("XDG_DATA_HOME") || (Config.home + "/.local/share")) + "/island/signal-chats.json"
+    property bool restored: false
+    Process {
+        id: prep
+        // a private folder first: only you can read what's inside
+        running: Config.s.signalKeepChats
+        // the file exists from the start (empty), so loading never waits on "file not found"
+        command: ["sh", "-c", "d=$(dirname \"$1\"); mkdir -p \"$d\" && chmod 700 \"$d\"; " +
+                              "[ -s \"$1\" ] || printf '{}' > \"$1\"; chmod 600 \"$1\"; true", "sh", root.chatFile]
+        onExited: { store.path = root.chatFile; giveUp.restart(); }
+    }
+    FileView {
+        id: store
+        path: ""
+        printErrors: false
+        onLoaded: root.restore(text())
+        onLoadFailed: root.restored = true           // nothing saved yet
+    }
+    Timer { id: saveLater; interval: 1500; onTriggered: root.save() }
+    // if loading never reports back, don't hold saving hostage
+    Timer { id: giveUp; interval: 4000; onTriggered: if (!root.restored) { console.warn("island: saved Signal chats didn't load; saving fresh"); root.restored = true; root.save(); } }
+    function save() {
+        if (!Config.s.signalKeepChats || store.path === "" || !restored) return;
+        const keep = {};
+        for (const k in convs) {
+            const c = convs[k];
+            keep[k] = { key: c.key, name: c.name, group: c.group, number: c.number, uuid: c.uuid,
+                        msgs: c.msgs.slice(-200), unread: c.unread, last: c.last };
+        }
+        store.setText(JSON.stringify({ v: 1, account: Config.s.signalAccount, convs: keep }));
+    }
+    function restore(text) {
+        try {
+            const d = JSON.parse(text || "{}");
+            // only this account's chats (after linking a different number, start clean)
+            if (d.v === 1 && d.account === Config.s.signalAccount && d.convs) {
+                const merged = {};
+                for (const k in d.convs) merged[k] = Object.assign({ typing: false, msgs: [], unread: 0, last: 0 }, d.convs[k], { typing: false });
+                // anything that arrived before the file loaded wins
+                for (const k in convs) {
+                    if (!merged[k]) { merged[k] = convs[k]; continue; }
+                    const seen = new Set(merged[k].msgs.map(m => m.ts + (m.mine ? "m" : "t")));
+                    for (const m of convs[k].msgs) if (!seen.has(m.ts + (m.mine ? "m" : "t"))) merged[k].msgs.push(m);
+                    merged[k].unread += convs[k].unread;
+                    merged[k].last = Math.max(merged[k].last, convs[k].last);
+                }
+                convs = merged;
+                rev++;
+            }
+        } catch (e) { console.warn("island: couldn't read saved Signal chats:", e); }
+        restored = true;
+        if (Object.keys(convs).length) saveLater.restart();
+    }
+    Process { id: forget; command: ["sh", "-c", "rm -f -- \"$1\"", "sh", root.chatFile] }
+    function clearSaved() {
+        convs = ({});
+        rev++;
+        forget.running = true;
+    }
+    Connections {
+        target: Config.s
+        function onSignalKeepChatsChanged() { if (Config.s.signalKeepChats) { root.restored = true; root.save(); } else forget.running = true; }
+    }
+    // a fresh copy of one chat: views bound to it see every change
+    // (the stored object stays the same, so QML wouldn't notice otherwise)
+    // call as snapshot(key, Signal.rev): passing rev makes the binding depend on it
+    function snapshot(key, r) {
+        const c = convs[key];
+        return c ? Object.assign({}, c, { msgs: c.msgs.slice() }) : null;
+    }
     function push(c, msg) {
         c.msgs = c.msgs.concat([msg]).slice(-200);
         c.last = Math.max(c.last, msg.ts);
@@ -251,12 +331,16 @@ Singleton {
         const c = convs[key];
         text = (text ?? "").trim();
         if (!c || !text) return;
-        const ok = call("send", Object.assign({ message: text }, target(c)), r => {
-            const ts = r?.timestamp ?? Date.now();
-            push(c, { ts: ts, from: "me", fromName: "You", mine: true, text: text, attachments: 0, reactions: {} });
-            touch();
-        });
-        if (ok) markRead(key);
+        // shows up right away (faded) and settles when signal-cli confirms
+        const msg = { ts: Date.now(), from: "me", fromName: "You", mine: true, text: text,
+                      attachments: 0, reactions: {}, pending: true, failed: false };
+        push(c, msg);
+        touch();
+        const ok = call("send", Object.assign({ message: text }, target(c)),
+            r => { msg.ts = r?.timestamp ?? msg.ts; msg.pending = false; touch(); },
+            () => { msg.pending = false; msg.failed = true; touch(); });
+        if (!ok) { msg.pending = false; msg.failed = true; touch(); }
+        else markRead(key);
     }
     function react(key, msg, emoji) {
         const c = convs[key];
@@ -325,6 +409,6 @@ Singleton {
         // forget the account here; your phone still lists the device until you remove it there
         Config.s.signalOn = false;
         Config.s.signalAccount = "";
-        convs = ({});
+        clearSaved();
     }
 }

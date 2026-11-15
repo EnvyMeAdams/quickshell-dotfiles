@@ -47,7 +47,7 @@ Column {
     // linking: the QR code appears here
     Card {
         width: parent.width
-        visible: Signal.installed && !Config.s.signalAccount
+        visible: !Config.s.signalAccount
         height: linkCol.implicitHeight + 28 + offset
         Column {
             id: linkCol
@@ -58,7 +58,9 @@ Column {
                 width: parent.width
                 wrapMode: Text.Wrap
                 font.pixelSize: 12
-                text: Signal.linking
+                text: !Signal.installed
+                    ? "The island can't find signal-cli. It looks for \"" + Config.s.signalCli + "\" in your PATH, then the Flatpak " + Signal.flatpakId + ". Check in a terminal:\n   flatpak info " + Signal.flatpakId + "\nthen press Check Again."
+                    : Signal.linking
                     ? "On your phone: Signal › Settings › Linked Devices › Link New Device, then scan this."
                     : "Links this computer to your phone's Signal, like Signal Desktop. Your messages stay end-to-end encrypted."
             }
@@ -81,7 +83,13 @@ Column {
             Row {
                 spacing: 8
                 PButton {
-                    visible: !Signal.linking
+                    visible: !Signal.installed
+                    text: "Check Again"
+                    icon: "refresh"
+                    onClicked: Signal.detect()
+                }
+                PButton {
+                    visible: Signal.installed && !Signal.linking
                     text: "Link This Computer"
                     icon: "qr_code_2"
                     checked: true
@@ -110,8 +118,9 @@ Column {
               "How it runs: the island starts \"signal-cli daemon --socket\" itself (Settings › Messages › Signal › Start signal-cli), " +
               "so there's no service to set up. Keep it running: Signal unlinks devices that stay offline for weeks.\n\n" +
               "Privacy: signal-cli keeps its keys in " + Signal.dataDir.replace(Config.home, "~") + ", as private as Signal Desktop's folder " +
-              "(your disk encryption covers it). The island keeps messages in memory only, so chats start fresh after a restart; " +
-              "your phone keeps the full history.\n\n" +
+              "(your disk encryption covers it). Chats you get here are saved in ~/.local/share/island/signal-chats.json, " +
+              "in a folder only you can open, so they survive restarts. Turn off Keep Chats to keep them in memory only " +
+              "(that also deletes the file). Older history stays on your phone.\n\n" +
               "If you also use Signal Desktop, turn on Hide Signal Desktop Alerts so messages don't pop up twice.\n\n" +
               "To remove it: Settings › Messages › Signal › Forget Account, then remove \"Island\" under Linked Devices on your phone."
     }

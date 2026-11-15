@@ -8,3 +8,5 @@ __pycache__/
 # in case someone copies their synced login-screen data in
 greeter/shell/user/
 settings.json
+# private data the island saves outside the repo; never commit a copy
+signal-chats.json
