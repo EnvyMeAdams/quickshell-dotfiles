@@ -21,6 +21,7 @@ Singleton {
         onNotification: n => {
             n.tracked = true;
             const critical = n.urgency === NotificationUrgency.Critical;
+            if (!Config.s.dnd || critical) Sounds.play("notification");
             if (Config.s.notifPopups && (!Config.s.dnd || critical)) {
                 root.latest = n;
                 Island.flash("notif", Config.s.notifTimeout);

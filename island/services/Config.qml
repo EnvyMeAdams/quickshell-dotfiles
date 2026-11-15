@@ -136,6 +136,12 @@ Singleton {
             property bool lockFingerprint: true     // only matters with a reader + enrolled finger
             property int fpListen: 60                // seconds the lock listens before it rests
             property int fpHintFor: 6                // seconds the resting hint stays (0 = always)
+
+            // Sounds (your own files; every event starts silent)
+            property bool soundsOn: true
+            property real soundVolume: 0.7
+            property var sounds: ({})                // event key -> file, e.g. { "lock": "~/Music/Sounds/lock.mp3" }
+            property string soundDir: "~/Music"      // where the sound browser starts
             property real glassBlur: 0.8
             property real glassTint: 0.45
 

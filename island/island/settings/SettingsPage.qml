@@ -21,6 +21,8 @@ Item {
           opts: ["Popups", "Popup Time", "Focus"] },
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
           opts: ["Visualizer", "Bars", "Camera Light"] },
+        { label: "Sounds", icon: "volume_up", tint: Theme.pastels.mint, comp: soundsC,
+          opts: ["Sounds", "Volume", "Sound Folder", "How It Works"].concat(Sounds.events.map(e => e.l)) },
         { label: "Home", icon: "home", tint: Theme.pastels.peach, comp: homeSetC,
           opts: ["Battery", "Tray", "Confirm Power"] },
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
@@ -269,6 +271,52 @@ Item {
             SSlider { label: "Tint"; key: "glassTint"; from: 0; to: 1; step: 0.05 }
             SText { label: "Fallback Lock"; key: "lockCmd"; fieldWidth: 300; placeholder: "hyprlock or swaylock" }
             SLink { icon: "help"; label: "Stuck Lock"; tint: Theme.pastels.yellow; onClicked: stack.push(stuckC) }
+        }
+    }
+    Component {
+        id: soundsC
+        SPage {
+            title: "Sounds"
+            SToggle { label: "Sounds"; hint: "Off mutes every island sound"; key: "soundsOn" }
+            SSlider { label: "Volume"; key: "soundVolume"; from: 0; to: 1; step: 0.05 }
+            // one row per event; fingerprint and battery ones only where they can happen
+            Repeater {
+                model: Sounds.events.filter(e => (!e.fp || Fingerprint.reader) && (!e.battery || Battery.present))
+                delegate: SLink {
+                    required property var modelData
+                    icon: modelData.i
+                    label: modelData.l
+                    hint: Sounds.nameFor(modelData.k) || ("None" + (modelData.h ? " · " + modelData.h : ""))
+                    tint: Sounds.fileFor(modelData.k) ? Theme.pastels.mint : Theme.card
+                    onClicked: stack.push(soundPickC, { event: modelData.k, title: modelData.l })
+                }
+            }
+            SText { label: "Sound Folder"; hint: "Where the browser starts"; key: "soundDir" }
+            SLink { icon: "help"; label: "How It Works"; tint: Theme.pastels.yellow; onClicked: stack.push(soundsHelpC) }
+        }
+    }
+    Component {
+        id: soundPickC
+        SoundPage {}
+    }
+    Component {
+        id: soundsHelpC
+        SPage {
+            title: "How It Works"
+            HelpCard {
+                text: "Every event starts with no sound. Pick a file for the ones you want: " +
+                      "click a file to use it (you'll hear it), ▶ plays it without choosing, None turns it off.\n\n" +
+                      "Formats: mp3, ogg, wav, flac, m4a, opus. Short files (under 2 seconds) work best.\n\n" +
+                      "Keep your sounds in one folder (Sound Folder) so the browser opens there. " +
+                      "Files stay where they are; Settings only remembers their path, so moving or renaming " +
+                      "a file silences that event until you pick it again.\n\n" +
+                      "Notifications follow Do Not Disturb (critical ones still sound). A fingerprint unlock " +
+                      "with its own sound skips the Unlock sound. With Recording › Desktop Sound on, the " +
+                      "Recording Start sound can end up at the very start of the video.\n\n" +
+                      (Sounds.qtOk ? "Plays through Qt Multimedia."
+                                   : "Qt Multimedia isn't available, so sounds play with pw-play (PipeWire). " +
+                                     "If mp3 files stay silent, use ogg or wav.")
+            }
         }
     }
     Component {
@@ -548,6 +596,7 @@ Item {
                     ["Visualizer", "cava"],
                     ["Videos", "qt multimedia, ffmpegthumbnailer"],
                     ["Lock", "pam"],
+                    ["Sounds", "qt multimedia (else pw-play from pipewire)"],
                     ["Fingerprint", "fprintd (with pam), only on machines with a reader"],
                     ["Web Search", "curl, xdg-utils"],
                     ["Launcher", "wl-clipboard, fd"],
