@@ -38,7 +38,9 @@ Singleton {
     signal incoming(string key, var msg)
 
     // ── is signal-cli there? ──
+    function detect() { if (!probe.running) probe.running = true; }
     Process {
+        id: probe
         running: true
         command: ["sh", "-c", "if command -v \"$1\" >/dev/null; then echo native; " +
                               "elif command -v flatpak >/dev/null && flatpak info \"$2\" >/dev/null 2>&1; then echo flatpak; fi",
