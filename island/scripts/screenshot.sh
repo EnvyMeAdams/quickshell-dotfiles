@@ -37,6 +37,9 @@ for c in json.load(sys.stdin).get("clients", []):
         print("%d,%d %dx%d %s" % (c["x"], c["y"], c["width"], c["height"], (c.get("title") or "").replace("\n", " ")))'
 }
 
+# slurp reads preset boxes from stdin whenever stdin isn't a terminal; started by
+# Quickshell its stdin is a pipe that never closes, so it would wait forever
+# without showing anything. Plain selections get an empty stdin (</dev/null).
 need_slurp() { command -v slurp >/dev/null || { notify-send "Screenshot" "Install slurp to pick a region."; exit 2; }; }
 
 case "$mode" in
@@ -53,13 +56,13 @@ window)
         # -r: only the listed windows can be picked (click one)
         geo=$(printf '%s\n' "$boxes" | slurp -r -f '%x,%y %wx%h') || exit 1
     else
-        geo=$(slurp) || exit 1
+        geo=$(slurp </dev/null) || exit 1
     fi
     grim -g "$geo" "$file"
     ;;
 *)
     need_slurp
-    geo=$(slurp) || exit 1
+    geo=$(slurp </dev/null) || exit 1
     grim -g "$geo" "$file"
     ;;
 esac || exit 1

@@ -26,6 +26,7 @@ Item {
         Repeater {
             model: root.tabs
             delegate: PButton {
+                id: tab
                 required property var modelData
                 required property int index
                 readonly property bool on: Island.hubTab === modelData.id
@@ -36,7 +37,8 @@ Item {
                 onClicked: Island.hubTab = modelData.id
 
                 Rectangle {
-                    visible: parent.modelData.id === "notifications" && Notifs.count > 0 && !parent.on
+                    // `tab`, not `parent`: PButton puts its children in an inner item
+                    visible: tab.modelData.id === "notifications" && Notifs.count > 0 && !tab.on
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.margins: 4

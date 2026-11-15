@@ -40,7 +40,7 @@ start)
     geo=""
     if [ "$mode" = region ]; then
         command -v slurp >/dev/null || { echo "slurp is not installed" >&2; rm -rf "$state"; exit 2; }
-        geo=$(slurp) || { rm -rf "$state"; exit 1; }
+        geo=$(slurp </dev/null) || { rm -rf "$state"; exit 1; }
     fi
 
     audio=""
