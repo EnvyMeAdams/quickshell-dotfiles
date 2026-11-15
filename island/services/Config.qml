@@ -138,6 +138,8 @@ Singleton {
             property int fpHintFor: 6                // seconds the resting hint stays (0 = always)
             property bool fpPopup: true              // popup when doas / app prompts ask for a finger
             property string fpPopupPos: "upper"      // upper | center
+            property int fpPamTries: 2               // doas / app prompts: swipes before the password (1-5)
+            property int fpPamWait: 10               // doas / app prompts: seconds without a finger (5-30)
 
             // Sounds (your own files; every event starts silent)
             property bool soundsOn: true
