@@ -85,6 +85,7 @@ hl.bind("ALT + Space", island("launcher"))
 hl.bind("ALT + Tab",   island("windows"))
 hl.bind("SUPER + S",   island("sound"))
 hl.bind("SUPER + L",   island("lock"))
+hl.bind("SUPER + Escape", island("power"))   -- power menu
 ```
 
 MangoWM (`~/.config/mango/config.conf`):
@@ -94,6 +95,7 @@ bind=ALT,space,spawn,quickshell ipc call island launcher
 bind=ALT,Tab,spawn,quickshell ipc call island windows
 bind=SUPER,s,spawn,quickshell ipc call island sound
 bind=SUPER,l,spawn,quickshell ipc call island lock
+bind=SUPER,Escape,spawn,quickshell ipc call island power
 ```
 
 ## Install the login screen

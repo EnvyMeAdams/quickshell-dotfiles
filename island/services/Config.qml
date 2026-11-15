@@ -171,6 +171,11 @@ Singleton {
             property bool chargePopupGlow: true      // breathing ring + light sweep while charging
             property bool showTray: true
             property bool powerConfirm: true
+            property string powerMenuLayout: "horizontal"   // horizontal | vertical
+            property int powerMenuDim: 45                   // % the screen darkens behind it
+            property bool powerMenuHints: true              // keyboard hints + numbers
+            property var powerMenuOrder: ["lock", "saver", "sleep", "logout", "reboot", "poweroff"]
+            property var powerMenuHidden: []
 
             // Tailscale (only shows if tailscale is installed)
             property bool tsTab: true                // its own tab in the hub
