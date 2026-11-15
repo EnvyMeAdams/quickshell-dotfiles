@@ -112,15 +112,23 @@ Item {
         }
     }
 
+    // recording: blinking red dot on the album art's corner
     Rectangle {
+        id: recDot
         visible: Recorder.recording
         anchors.left: art.right
         anchors.leftMargin: -8
         anchors.top: art.top
-        width: 10; height: 10; radius: 5
-        color: Theme.pastels.coral
+        width: 11; height: 11; radius: 5.5
+        color: "#ff3b30"
         border.width: 1.5
         border.color: Theme.line
         z: 2
+        SequentialAnimation on opacity {
+            running: recDot.visible
+            loops: Animation.Infinite
+            NumberAnimation { to: 0.2; duration: 600; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 1; duration: 600; easing.type: Easing.InOutSine }
+        }
     }
 }

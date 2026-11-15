@@ -297,7 +297,7 @@ Item {
     }
     Component {
         id: soundPickC
-        SoundPage {}
+        SoundPicker {}
     }
     Component {
         id: soundsHelpC

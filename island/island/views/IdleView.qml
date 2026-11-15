@@ -30,21 +30,42 @@ Item {
         fill: Theme.accent
     }
 
-    // recording: red chip with the time, click to stop
-    Chip {
+    // recording: blinking red dot + time, click to stop
+    Rectangle {
         id: rec
         anchors.left: parent.left
         anchors.leftMargin: 6
         anchors.verticalCenter: parent.verticalCenter
         visible: Recorder.recording
-        size: 24
-        text: "● " + Recorder.elapsed
-        fill: Theme.pastels.coral
-        SequentialAnimation on opacity {
-            running: rec.visible
-            loops: Animation.Infinite
-            NumberAnimation { to: 0.6; duration: 800 }
-            NumberAnimation { to: 1; duration: 800 }
+        height: 24
+        width: recRow.implicitWidth + 16
+        radius: height / 2
+        color: Theme.card
+        border.width: Math.max(1, Theme.outline - 0.5)
+        border.color: Theme.line
+
+        Row {
+            id: recRow
+            anchors.centerIn: parent
+            spacing: 6
+            Rectangle {
+                id: recDot
+                anchors.verticalCenter: parent.verticalCenter
+                width: 10; height: 10; radius: 5
+                color: "#ff3b30"
+                SequentialAnimation on opacity {
+                    running: rec.visible
+                    loops: Animation.Infinite
+                    NumberAnimation { to: 0.15; duration: 600; easing.type: Easing.InOutSine }
+                    NumberAnimation { to: 1; duration: 600; easing.type: Easing.InOutSine }
+                }
+            }
+            PText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: Recorder.elapsed
+                font.pixelSize: 11
+                font.bold: true
+            }
         }
         MouseArea {
             anchors.fill: parent
