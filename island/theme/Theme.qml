@@ -72,11 +72,10 @@ Singleton {
     // so nothing reflows or jumps while the pill morphs
     readonly property bool battery: { try { return Battery.shown === true; } catch (e) { return false; } }
     readonly property int batteryW: battery ? 58 : 0
-    // room for the chat bubble / exit-node flag, only while they show
+    // room for the exit-node flag, only while it shows
     readonly property int extraW: {
         try {
-            return (Messages.unread > 0 ? 34 : 0)
-                 + (Config.s.tsPillFlag && Tailscale.up && Tailscale.exitNode ? 22 : 0);
+            return Config.s.tsPillFlag && Tailscale.up && Tailscale.exitNode ? 22 : 0;
         } catch (e) { return 0; }
     }
     readonly property var sizes: ({
@@ -87,7 +86,6 @@ Singleton {
         brightness: Qt.size(420, 60),
         notif:      Qt.size(460, 104),
         activity:   Qt.size(380, 60),
-        message:    Qt.size(480, 118),
         launcher:   Qt.size(600, 440),
         windows:    Qt.size(760, 176),
         hub:        Qt.size(880, 520)

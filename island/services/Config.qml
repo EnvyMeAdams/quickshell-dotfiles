@@ -185,22 +185,6 @@ Singleton {
             property bool tsTaildrop: false          // save files sent to this device
             property string tsTaildropDir: "~/Downloads"
 
-            // Messages: Signal (signal-cli)
-            property bool signalOn: false
-            property bool signalKeepChats: true      // save chats so they survive restarts
-            property string signalAccount: ""        // your number, e.g. +15551234567 (set by linking)
-            property bool signalDaemon: true         // the island starts signal-cli itself
-            property string signalCli: "signal-cli"
-            property string signalSocket: ""         // empty = $XDG_RUNTIME_DIR/island-signal.sock
-            property bool msgPopups: true
-            property bool msgPreviews: true          // off: "New Message" only
-            property bool msgLockPreviews: false
-            property bool msgReceipts: true          // send read receipts when you open a chat
-            property bool msgTyping: true            // show when someone is typing
-            property var msgAllow: []                // names that still pop up during Focus
-            property bool signalHideDesktop: true    // hide Signal Desktop's own alerts while connected
-            property string msgReactions: "👍 ❤️ 😂"
-
             // Spotify (Spicetify bridge)
             property bool spotifyBridge: true
             property int spotifyPort: 47719

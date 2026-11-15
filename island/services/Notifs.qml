@@ -19,10 +19,6 @@ Singleton {
         bodyMarkupSupported: false
 
         onNotification: n => {
-            // Signal Desktop's own alerts would double up with the island's Signal
-            try {
-                if (Config.s.signalHideDesktop && Signal.connected && root.isSignalDesktop(n)) return;
-            } catch (e) {}
             n.tracked = true;
             const critical = n.urgency === NotificationUrgency.Critical;
             if (!Config.s.dnd || critical) Sounds.play("notification");
@@ -31,17 +27,6 @@ Singleton {
                 Island.flash("notif", Config.s.notifTimeout);
             }
         }
-    }
-
-    function isSignalDesktop(n) { return /^signal/i.test(n?.appName ?? "") || /signal/i.test(n?.desktopEntry ?? ""); }
-
-    // Signal Desktop: a click jumps into the app (its "default" action) instead of the hub
-    function openApp(n) {
-        if (!n || !isSignalDesktop(n)) return false;
-        const a = (n.actions ?? []).find(x => x.identifier === "default") ?? (n.actions ?? [])[0];
-        if (!a) return false;
-        a.invoke();
-        return true;
     }
 
     function clearAll() { server.trackedNotifications.values.slice().forEach(n => n.dismiss()); }

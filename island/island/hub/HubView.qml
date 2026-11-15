@@ -7,7 +7,7 @@ import qs.island.settings
 Item {
     id: root
 
-    // Messages and Tailscale only appear when they have something to show.
+    // Tailscale only appears when it's installed.
     // Each optional tab is checked on its own: if one of them errors, only
     // that tab is skipped (and the reason goes to the log), never the row.
     readonly property var tabs: {
@@ -17,8 +17,6 @@ Item {
             { id: "control", icon: "tune", label: "Control" },
             { id: "notifications", icon: "notifications", label: "Alerts" }
         ];
-        try { if (Messages.available) t.push({ id: "messages", icon: "chat", label: "Messages" }); }
-        catch (e) { console.warn("island: Messages tab skipped:", e); }
         try { if (Tailscale.installed && Config.s.tsTab) t.push({ id: "tailscale", icon: "hub", label: "Tailscale" }); }
         catch (e) { console.warn("island: Tailscale tab skipped:", e); }
         t.push({ id: "wallpaper", icon: "image", label: "Wallpaper" },
@@ -51,7 +49,7 @@ Item {
                     visible: {
                         if (tab.on) return false;
                         if (tab.modelData.id === "notifications") return Notifs.count > 0;
-                        try { return tab.modelData.id === "messages" && Messages.unread > 0; } catch (e) { return false; }
+                        return false;
                     }
                     anchors.right: parent.right
                     anchors.top: parent.top
@@ -105,7 +103,7 @@ Item {
         sourceComponent: ({
             home: homeC, sound: soundC, control: controlC,
             notifications: notifC, wallpaper: wallC, settings: settingsC,
-            messages: messagesC, tailscale: tailscaleC
+            tailscale: tailscaleC
         })[Island.hubTab] ?? homeC
     }
 
@@ -115,6 +113,5 @@ Item {
     Component { id: notifC; NotificationsPage {} }
     Component { id: wallC; WallpaperPage {} }
     Component { id: settingsC; SettingsPage {} }
-    Component { id: messagesC; MessagesPage {} }
     Component { id: tailscaleC; TailscalePage {} }
 }

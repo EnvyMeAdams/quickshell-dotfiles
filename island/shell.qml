@@ -11,7 +11,7 @@ ShellRoot {
     id: root
 
     // make sure background services start even before anything is shown
-    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight, FingerprintWatch, Tailscale, Signal, Messages, Spotify]
+    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight, FingerprintWatch, Tailscale, Spotify]
 
     Variants {
         model: Quickshell.screens
@@ -77,8 +77,6 @@ ShellRoot {
             try { Awake.saverBlocked; } catch (e) { missing.push("Keep Awake"); }
             try { Recorder.recording; } catch (e) { missing.push("Recording"); }
             try { Tailscale.installed; } catch (e) { missing.push("Tailscale"); }
-            try { Signal.on; } catch (e) { missing.push("Signal"); }
-            try { Messages.unread; } catch (e) { missing.push("Messages"); }
             try { Spotify.on; } catch (e) { missing.push("Spotify"); }
             if (missing.length > 0) {
                 console.warn("island: not loaded:", missing.join(", "));
@@ -100,7 +98,6 @@ ShellRoot {
         function notifications(): void { Island.toggleHub("notifications"); }
         function wallpaper(): void { Island.toggleHub("wallpaper"); }
         function settings(): void { Island.toggleHub("settings"); }
-        function messages(): void { Island.toggleHub("messages"); }
         function tailscale(): void { Island.toggleHub("tailscale"); }
         function tsToggle(): void { Tailscale.toggle(); }
         function close(): void { Island.close(); }

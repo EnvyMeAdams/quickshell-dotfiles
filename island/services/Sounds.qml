@@ -20,7 +20,6 @@ Singleton {
         { k: "screenshot",   l: "Screenshot",        i: "screenshot_region",   h: "Not when you cancel" },
         { k: "recordStart",  l: "Recording Start",   i: "radio_button_checked", h: "Desktop Sound may record it" },
         { k: "recordStop",   l: "Recording Stop",    i: "stop_circle",         h: "" },
-        { k: "message",      l: "Message",           i: "chat",                h: "Signal" },
         { k: "tsLost",       l: "Exit Node Offline", i: "vpn_lock",            h: "Tailscale" },
         { k: "charger",      l: "Charger Plugged In", i: "power",              h: "Laptops", battery: true },
         { k: "lowBattery",   l: "Low Battery",       i: "battery_alert",       h: "Once, at 15%", battery: true }

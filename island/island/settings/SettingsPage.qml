@@ -21,8 +21,6 @@ Item {
           opts: ["Popups", "Popup Time", "Focus"] },
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
           opts: ["Visualizer", "Bars", "Camera Light", "Spotify", "Lyrics in Pill", "Canvas", "Heart", "Up Next", "Song Change", "Port"] },
-        { label: "Messages", icon: "chat", tint: Theme.pastels.mint, comp: messagesC,
-          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Keep Chats", "Clear Saved Chats", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account"] },
         { label: "Tailscale", icon: "hub", tint: Theme.pastels.aqua, comp: tailscaleC,
           opts: ["Hub Tab", "Exit Node Activity", "Exit Node Offline", "Pill Flag", "Taildrop", "Taildrop Folder", "Set Up"] },
         { label: "Sounds", icon: "volume_up", tint: Theme.pastels.mint, comp: soundsC,
@@ -263,67 +261,6 @@ Item {
                       "The bridge only listens on 127.0.0.1 (this computer). Canvas uses Spotify's internal API, " +
                       "so an update can break it; the card then simply shows no video."
             }
-        }
-    }
-    Component {
-        id: messagesC
-        SPage {
-            title: "Messages"
-            SLink {
-                icon: "chat"
-                label: "Signal"
-                hint: Signal.connected ? "Connected" : Config.s.signalAccount ? (Config.s.signalOn ? "Connecting…" : "Off") : "Not linked"
-                tint: Theme.pastels.mint
-                onClicked: stack.push(signalC)
-            }
-            SToggle { label: "Popups"; hint: "Message card in the pill"; key: "msgPopups" }
-            SToggle { label: "Previews"; hint: "Off: just \"New Message\""; key: "msgPreviews" }
-            SToggle { label: "Lock Screen Previews"; key: "msgLockPreviews" }
-            SToggle { label: "Typing"; hint: "Show when someone is typing"; key: "msgTyping" }
-            SWords { label: "Focus Allows"; hint: "Names that still pop up during Focus"; key: "msgAllow"; placeholder: "Mom, Alex" }
-            SText { label: "Reactions"; hint: "Up to five, separated by spaces"; key: "msgReactions"; fieldWidth: 200 }
-        }
-    }
-    Component {
-        id: signalC
-        SPage {
-            title: "Signal"
-            SToggle { label: "Signal"; hint: Config.s.signalAccount ? Config.s.signalAccount : "Link first (below)"; key: "signalOn" }
-            SToggle { label: "Start signal-cli"; hint: "Off if you run your own daemon"; key: "signalDaemon" }
-            SText { label: "Socket"; hint: "Empty = the island's own"; key: "signalSocket"; placeholder: "$XDG_RUNTIME_DIR/island-signal.sock" }
-            SText { label: "signal-cli"; hint: Signal.kind === "flatpak" ? "Using the Flatpak" : "Command or full path (Flatpak is found by itself)"; key: "signalCli"; fieldWidth: 240 }
-            SToggle { label: "Keep Chats"; hint: "Saved privately so they survive restarts; off: memory only"; key: "signalKeepChats" }
-            SRow {
-                label: "Clear Saved Chats"
-                hint: "Empties the list here; your phone keeps everything"
-                PButton {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Clear"
-                    onClicked: Signal.clearSaved()
-                }
-            }
-            SToggle { label: "Read Receipts"; hint: "Sent when you open a chat"; key: "msgReceipts" }
-            SToggle { label: "Hide Signal Desktop Alerts"; hint: "While the island is connected"; key: "signalHideDesktop" }
-            SLink { icon: "qr_code_2"; label: "Link & Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(signalSetupC) }
-            SRow {
-                visible: Config.s.signalAccount !== ""
-                label: "Forget Account"
-                hint: "Then remove \"Island\" under Linked Devices on your phone"
-                PButton {
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Forget"
-                    tint: Theme.pastels.pink
-                    checked: true
-                    onClicked: Signal.unlink()
-                }
-            }
-        }
-    }
-    Component {
-        id: signalSetupC
-        SPage {
-            title: "Link Signal"
-            SignalSetup { width: parent.width }
         }
     }
     Component {
@@ -816,7 +753,7 @@ Item {
                     ["Focus", "dnd"], ["Mic", "micmute"], ["Night", "nightlight"], ["Screenshot", "screenshot region"],
                     ["Record", "record"], ["Record Region", "recordRegion"],
                     ["Keep Awake", "awake"], ["Lock", "lock"], ["Saver", "saver"], ["Power Menu", "power"],
-                    ["Messages", "messages"], ["Tailscale", "tailscale"], ["Close", "close"]
+                    ["Tailscale", "tailscale"], ["Close", "close"]
                 ]
                 delegate: SRow {
                     required property var modelData
@@ -905,7 +842,6 @@ Item {
                     ["Accent", "ffmpegthumbnailer for videos"],
                     ["Laptop", "brightnessctl, bluez"],
                     ["Tailscale", "tailscale (net-vpn/tailscale), operator set once"],
-                    ["Signal", "signal-cli (Flatpak org.asamk.SignalCli or system), qrencode"],
                     ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"]
                 ]
                 delegate: SRow {

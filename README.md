@@ -168,7 +168,6 @@ tty login.
 | Tray | Quickshell with SystemTray (hidden if your build lacks it) |
 | Login screen | greetd, python3, polkit (for its power buttons) |
 | Tailscale panel (optional) | tailscale; your user set as operator once: `doas tailscale set --operator=$USER` |
-| Signal (optional) | signal-cli (Flatpak `org.asamk.SignalCli` or system), qrencode for the linking code |
 | Spotify extras (optional) | Spicetify + `extras/spicetify/island-bridge.js`, Qt WebSockets (`dev-qt/qtwebsockets`) |
 
 Screenshot and Night Light pick the right tool for your compositor. Leave
@@ -184,10 +183,6 @@ Settings with its setup steps behind a button.
   including Mullvad servers grouped by country, LAN access, DNS, routes,
   Shields Up, advertising as an exit node, saving Taildrop files. A pill card
   says which exit node you're on, and warns if it goes offline.
-- **Signal**: links this computer to your phone like Signal Desktop (QR code
-  in Settings), then runs `signal-cli daemon --socket` itself. Messages pop up
-  in the pill with quick reactions and Reply; Hub › Messages has your chats.
-  Chats are saved privately so they survive restarts (Keep Chats).
 - **Spotify**: play/pause/art work through MPRIS as before. With the Spicetify
   bridge you also get the heart, synced lyrics in the pill, Canvas behind the
   media card and Up Next. Setup: Settings › Media › Spotify › How to Set Up.

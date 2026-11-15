@@ -22,7 +22,7 @@ Item {
         if (Config.s.nowPlayingInPill && Media.active) return "nowplaying";
         return "idle";
     }
-    readonly property bool clickToOpen: ["idle", "nowplaying", "workspace", "volume", "brightness", "notif", "activity", "message"].includes(view)
+    readonly property bool clickToOpen: ["idle", "nowplaying", "workspace", "volume", "brightness", "notif", "activity"].includes(view)
     readonly property bool roundPill: ["idle", "nowplaying", "workspace", "volume", "brightness"].includes(view)
     readonly property size target: Theme.sizes[view]
     property string shown: view
@@ -72,8 +72,6 @@ Item {
         onClicked: m => {
             if (m.button === Qt.MiddleButton) { Media.toggle(); return; }
             if (m.button === Qt.RightButton) { Island.toggleHub("control"); return; }
-            if (root.view === "message") { Messages.openChat(Messages.popKey); return; }
-            if (root.view === "notif" && Notifs.openApp(Notifs.latest)) { Island.dismiss(); return; }
             Island.toggleHub(root.view === "notif" ? "notifications"
                            : root.view === "activity" ? (Island.activity.tab || "home")
                            : root.view === "volume" ? "sound"
@@ -142,7 +140,7 @@ Item {
                 sourceComponent: ({
                     idle: idleC, nowplaying: nowC, workspace: wsC, volume: volC, brightness: brightC,
                     notif: notifC, launcher: launcherC, hub: hubC, windows: windowsC,
-                    activity: activityC, message: messageC
+                    activity: activityC
                 })[root.shown] ?? idleC
             }
         }
@@ -158,5 +156,4 @@ Item {
     Component { id: hubC; HubView {} }
     Component { id: windowsC; WindowsView {} }
     Component { id: activityC; ActivityView {} }
-    Component { id: messageC; MessageView {} }
 }
