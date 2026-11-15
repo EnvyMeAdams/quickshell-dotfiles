@@ -8,6 +8,28 @@ Card {
     id: root
 
     readonly property var p: Media.player
+    readonly property bool canvasOn: Config.s.spotifyCanvas && Spotify.on && Spotify.canvas !== ""
+
+    // Spotify Canvas: the song's looping video, softly behind everything
+    ClippingRectangle {
+        anchors.fill: parent
+        anchors.margins: Theme.outline
+        radius: Math.max(0, root.radius - Theme.outline)
+        color: "transparent"
+        visible: root.canvasOn && canvasLoader.status === Loader.Ready
+        opacity: visible ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: Theme.dur(400) } }
+        Loader {
+            id: canvasLoader
+            anchors.fill: parent
+            active: root.canvasOn
+            source: Qt.resolvedUrl("../../media/VideoBg.qml")
+        }
+        Binding { target: canvasLoader.item; property: "source"; value: Spotify.canvas; when: canvasLoader.status === Loader.Ready }
+        Binding { target: canvasLoader.item; property: "playing"; value: Media.playing; when: canvasLoader.status === Loader.Ready }
+        // keeps the text readable over any video
+        Rectangle { anchors.fill: parent; color: Theme.card; opacity: 0.62 }
+    }
 
     PText {
         anchors.centerIn: parent
@@ -65,9 +87,29 @@ Card {
                 width: parent.width
                 spacing: 8
                 Column {
-                    width: parent.width - (playerChip.visible ? playerChip.width + 8 : 0)
+                    width: parent.width - (playerChip.visible ? playerChip.width + 8 : 0) - (heart.visible ? heart.width + 8 : 0)
                     PText { width: parent.width; text: root.p?.trackTitle ?? ""; font.bold: true; font.pixelSize: 17 }
                     PText { width: parent.width; text: root.p?.trackArtist ?? ""; color: Theme.sub; font.pixelSize: 12 }
+                    PText {
+                        width: parent.width
+                        visible: Config.s.spotifyUpNext && Spotify.on && Spotify.upNext.length > 0
+                        text: "Up Next  " + (Spotify.upNext[0]?.title ?? "") + (Spotify.upNext[0]?.artist ? " · " + Spotify.upNext[0].artist : "")
+                        color: Theme.sub
+                        font.pixelSize: 10
+                        topPadding: 2
+                    }
+                }
+                PButton {
+                    id: heart
+                    visible: Config.s.spotifyHeart && Spotify.on
+                    icon: "favorite"
+                    iconSize: 16
+                    faceHeight: 28
+                    offset: 3
+                    pad: 4
+                    checked: Spotify.liked
+                    tint: Theme.pastels.pink
+                    onClicked: Spotify.heart()
                 }
                 Chip {
                     id: playerChip

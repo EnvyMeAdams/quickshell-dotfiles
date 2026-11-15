@@ -20,7 +20,11 @@ Item {
         { label: "Alerts", icon: "notifications", tint: Theme.pastels.rose, comp: notifC,
           opts: ["Popups", "Popup Time", "Focus"] },
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
-          opts: ["Visualizer", "Bars", "Camera Light"] },
+          opts: ["Visualizer", "Bars", "Camera Light", "Spotify", "Lyrics in Pill", "Canvas", "Heart", "Up Next", "Song Change", "Port"] },
+        { label: "Messages", icon: "chat", tint: Theme.pastels.mint, comp: messagesC,
+          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account", "Fluxer", "Fluxer Popups", "Muted Words"] },
+        { label: "Tailscale", icon: "hub", tint: Theme.pastels.aqua, comp: tailscaleC,
+          opts: ["Hub Tab", "Exit Node Activity", "Exit Node Offline", "Pill Flag", "Taildrop", "Taildrop Folder", "Set Up"] },
         { label: "Sounds", icon: "volume_up", tint: Theme.pastels.mint, comp: soundsC,
           opts: ["Sounds", "Volume", "Sound Folder", "How It Works"].concat(Sounds.events.map(e => e.l)) },
         { label: "Home", icon: "home", tint: Theme.pastels.peach, comp: homeSetC,
@@ -203,6 +207,171 @@ Item {
             SToggle { label: "Visualizer"; key: "visualizer" }
             SSlider { label: "Bars"; key: "visualizerBars"; from: 8; to: 32; step: 1 }
             SToggle { label: "Camera Light"; key: "cameraIndicator" }
+            SLink {
+                icon: "graphic_eq"
+                label: "Spotify"
+                hint: !Config.s.spotifyBridge ? "Off" : Spotify.loadError ? Spotify.loadError
+                    : Spotify.connected ? "Connected to Spicetify" : "Waiting for Spicetify"
+                tint: Theme.pastels.green
+                onClicked: stack.push(spotifyC)
+            }
+        }
+    }
+    Component {
+        id: spotifyC
+        SPage {
+            title: "Spotify"
+            SToggle { label: "Spicetify Bridge"; hint: "Extras from extras/spicetify/island-bridge.js"; key: "spotifyBridge" }
+            SToggle { label: "Lyrics in Pill"; hint: "Synced lines replace the song title"; key: "spotifyLyricsPill" }
+            SToggle { label: "Canvas"; hint: "The song's looping video behind the media card"; key: "spotifyCanvas" }
+            SToggle { label: "Heart"; hint: "Like button on the media card"; key: "spotifyHeart" }
+            SToggle { label: "Up Next"; key: "spotifyUpNext" }
+            SToggle { label: "Song Change"; hint: "Pill shows the new song briefly"; key: "spotifyToast" }
+            SSlider { label: "Port"; hint: "Same as PORT in island-bridge.js"; key: "spotifyPort"; from: 47700; to: 47799; step: 1 }
+            SRow {
+                label: "Right Now"
+                hint: Spotify.loadError || (Spotify.connected ? (Spotify.synced ? "Synced lyrics" : Spotify.lines.length ? "Lyrics (not synced)" : "No lyrics for this song")
+                                                              + (Spotify.canvas ? " · Canvas" : "") : "Spotify not connected")
+            }
+            SLink { icon: "help"; label: "How to Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(spotifyHelpC) }
+        }
+    }
+    Component {
+        id: spotifyHelpC
+        SPage {
+            title: "Spotify Setup"
+            HelpCard {
+                text: "Play, pause, skip and album art already work with any Spotify (through MPRIS). " +
+                      "Spicetify adds the heart, synced lyrics, Canvas and Up Next.\n\n" +
+                      "1. Install Spicetify (no doas needed):\n" +
+                      "   curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh\n" +
+                      "   Open Spotify, log in, leave it a minute, then quit it.\n\n" +
+                      "   Gentoo Spotify (media-sound/spotify) lives in /opt/spotify/spotify-client:\n" +
+                      "   doas chmod a+wr /opt/spotify/spotify-client\n" +
+                      "   doas chmod a+wr -R /opt/spotify/spotify-client/Apps\n" +
+                      "   spicetify config spotify_path /opt/spotify/spotify-client\n" +
+                      "   spicetify config prefs_path $HOME/.config/spotify/prefs   (type your full home path)\n\n" +
+                      "   Flatpak Spotify instead: see spicetify.app › Installation › Spotify installed via Flatpak.\n\n" +
+                      "2. Copy the bridge from this repo and turn it on:\n" +
+                      "   cp ~/quickshell-dotfiles/extras/spicetify/island-bridge.js ~/.config/spicetify/Extensions/\n" +
+                      "   spicetify config extensions island-bridge.js\n" +
+                      "   spicetify backup apply\n\n" +
+                      "3. Quickshell needs QtWebSockets: doas emerge --ask dev-qt/qtwebsockets, then restart Quickshell.\n\n" +
+                      "After every Spotify update through emerge: run the two chmod lines again, then\n" +
+                      "   spicetify restore backup apply\n" +
+                      "Otherwise the update quietly removes it.\n\n" +
+                      "The bridge only listens on 127.0.0.1 (this computer). Canvas uses Spotify's internal API, " +
+                      "so an update can break it; the card then simply shows no video."
+            }
+        }
+    }
+    Component {
+        id: messagesC
+        SPage {
+            title: "Messages"
+            SLink {
+                icon: "chat"
+                label: "Signal"
+                hint: Signal.connected ? "Connected" : Config.s.signalAccount ? (Config.s.signalOn ? "Connecting…" : "Off") : "Not linked"
+                tint: Theme.pastels.mint
+                onClicked: stack.push(signalC)
+            }
+            SToggle { label: "Popups"; hint: "Message card in the pill"; key: "msgPopups" }
+            SToggle { label: "Previews"; hint: "Off: just \"New Message\""; key: "msgPreviews" }
+            SToggle { label: "Lock Screen Previews"; key: "msgLockPreviews" }
+            SToggle { label: "Typing"; hint: "Show when someone is typing"; key: "msgTyping" }
+            SWords { label: "Focus Allows"; hint: "Names that still pop up during Focus"; key: "msgAllow"; placeholder: "Mom, Alex" }
+            SText { label: "Reactions"; hint: "Up to five, separated by spaces"; key: "msgReactions"; fieldWidth: 200 }
+            SLink {
+                icon: "forum"
+                label: "Fluxer"
+                hint: !Config.s.fluxerStyle ? "Off" : Notifs.fluxerCount + " in Alerts"
+                tint: Theme.pastels.lavender
+                onClicked: stack.push(fluxerC)
+            }
+        }
+    }
+    Component {
+        id: signalC
+        SPage {
+            title: "Signal"
+            SToggle { label: "Signal"; hint: Config.s.signalAccount ? Config.s.signalAccount : "Link first (below)"; key: "signalOn" }
+            SToggle { label: "Start signal-cli"; hint: "Off if you run your own daemon"; key: "signalDaemon" }
+            SText { label: "Socket"; hint: "Empty = the island's own"; key: "signalSocket"; placeholder: "$XDG_RUNTIME_DIR/island-signal.sock" }
+            SText { label: "signal-cli"; hint: Signal.kind === "flatpak" ? "Using the Flatpak" : "Command or full path (Flatpak is found by itself)"; key: "signalCli"; fieldWidth: 240 }
+            SToggle { label: "Read Receipts"; hint: "Sent when you open a chat"; key: "msgReceipts" }
+            SToggle { label: "Hide Signal Desktop Alerts"; hint: "While the island is connected"; key: "signalHideDesktop" }
+            SLink { icon: "qr_code_2"; label: "Link & Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(signalSetupC) }
+            SRow {
+                visible: Config.s.signalAccount !== ""
+                label: "Forget Account"
+                hint: "Then remove \"Island\" under Linked Devices on your phone"
+                PButton {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Forget"
+                    tint: Theme.pastels.pink
+                    checked: true
+                    onClicked: Signal.unlink()
+                }
+            }
+        }
+    }
+    Component {
+        id: signalSetupC
+        SPage {
+            title: "Link Signal"
+            SignalSetup { width: parent.width }
+        }
+    }
+    Component {
+        id: fluxerC
+        SPage {
+            title: "Fluxer"
+            SToggle { label: "Fluxer"; hint: "Own look for Fluxer alerts + a Messages tab"; key: "fluxerStyle" }
+            SToggle { label: "Fluxer Popups"; key: "fluxerPopups" }
+            SWords { label: "Muted Words"; hint: "Alerts containing any stay silent (servers, channels)"; key: "fluxerMuted"; placeholder: "#memes, Big Server" }
+            SLink { icon: "help"; label: "How It Works"; tint: Theme.pastels.yellow; onClicked: stack.push(fluxerHelpC) }
+        }
+    }
+    Component {
+        id: fluxerHelpC
+        SPage {
+            title: "Fluxer"
+            HelpCard {
+                text: "The island reads the alerts the Fluxer desktop app already sends, so there's no token or login to set up, " +
+                      "and nothing extra talks to Fluxer's servers.\n\n" +
+                      "Fluxer alerts get a lilac Fluxer badge, count in the pill's chat bubble, and appear under Messages › Fluxer. " +
+                      "Clicking one in the pill jumps into the app.\n\n" +
+                      "Muted Words: alerts containing any of them are kept in Alerts but don't pop up or make a sound, " +
+                      "e.g. a busy server's name or #channel.\n\n" +
+                      "Limits: the Fluxer app has to be running, and replies happen in the app. " +
+                      "Note that Fluxer isn't end-to-end encrypted, so keep private chats on Signal."
+            }
+        }
+    }
+    Component {
+        id: tailscaleC
+        SPage {
+            title: "Tailscale"
+            SRow {
+                label: "Status"
+                hint: !Tailscale.installed ? "Not installed" : !Tailscale.daemon ? "tailscaled not running"
+                    : (Tailscale.up ? "Connected" : Tailscale.state || "Off") + (Tailscale.isOperator ? "" : " · operator not set")
+            }
+            SToggle { label: "Hub Tab"; hint: "Off: open it from the Control tile"; key: "tsTab" }
+            SToggle { label: "Exit Node Activity"; hint: "\"Connected via …\" in the pill"; key: "tsActivity" }
+            SToggle { label: "Exit Node Offline"; hint: "Warns when traffic stops going through it"; key: "tsLostAlert" }
+            SToggle { label: "Pill Flag"; hint: "Tiny flag while on an exit node"; key: "tsPillFlag" }
+            SToggle { label: "Taildrop"; hint: "Save files sent to this device"; key: "tsTaildrop" }
+            SText { label: "Taildrop Folder"; key: "tsTaildropDir"; fieldWidth: 240 }
+            SLink { icon: "help"; label: "Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(tsHelpC) }
+        }
+    }
+    Component {
+        id: tsHelpC
+        SPage {
+            title: "Set Up Tailscale"
+            TsHelp { width: parent.width }
         }
     }
     Component {
@@ -677,7 +846,11 @@ Item {
                     ["Night Light", "Hyprland: hyprsunset · others: wlsunset"],
                     ["Recording", "wf-recorder, slurp, pipewire-pulse"],
                     ["Accent", "ffmpegthumbnailer for videos"],
-                    ["Laptop", "brightnessctl, bluez"]
+                    ["Laptop", "brightnessctl, bluez"],
+                    ["Tailscale", "tailscale (net-vpn/tailscale), operator set once"],
+                    ["Signal", "signal-cli (Flatpak org.asamk.SignalCli or system), qrencode"],
+                    ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"],
+                    ["Fluxer", "the Fluxer desktop app"]
                 ]
                 delegate: SRow {
                     required property var modelData

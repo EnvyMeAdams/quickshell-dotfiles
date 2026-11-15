@@ -4,7 +4,7 @@ import Quickshell
 
 // One source of truth for what the pill is doing.
 //   mode:      idle | launcher | hub   (things you opened on purpose)
-//   popup: "" | volume | notif | workspace   (short popups, only while idle)
+//   popup: "" | volume | notif | workspace | activity | message   (short popups, only while idle)
 Singleton {
     id: root
 
@@ -12,6 +12,14 @@ Singleton {
     property string hubTab: "home"
     property string popup: ""
     property bool held: false
+
+    // live activity: a short card in the pill (Tailscale exit node, …)
+    //   { icon, emoji, title, sub, tint, tab }  — tab: hub tab a click opens
+    property var activity: ({})
+    function showActivity(a, ms) {
+        activity = a;
+        flash("activity", ms || 2600);
+    }
 
     function toggle(m) {
         mode = (mode === m) ? "idle" : m;

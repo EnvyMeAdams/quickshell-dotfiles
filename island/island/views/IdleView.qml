@@ -108,6 +108,21 @@ Item {
         PrivacyDot { on: Privacy.mic; dotColor: Theme.mic }
         PrivacyDot { on: Privacy.camera; dotColor: Theme.camera }
 
+        // unread chats (Signal + Fluxer)
+        Row {
+            visible: Messages.unread > 0
+            spacing: 2
+            anchors.verticalCenter: parent.verticalCenter
+            PIcon { name: "chat_bubble"; size: 15; color: "#3a76f0"; anchors.verticalCenter: parent.verticalCenter }
+            PText { text: Messages.unread; font.bold: true; font.pixelSize: 11; anchors.verticalCenter: parent.verticalCenter }
+        }
+        // on an exit node (e.g. Mullvad): a tiny flag, if you want it
+        Text {
+            visible: Config.s.tsPillFlag && Tailscale.up && !!Tailscale.exitNode
+            text: Tailscale.exitNode ? (Tailscale.flag(Tailscale.exitNode.code) || "🛡") : ""
+            font.pixelSize: 13
+            anchors.verticalCenter: parent.verticalCenter
+        }
         PIcon {
             name: Config.s.dnd ? "notifications_off" : "notifications"
             size: 16

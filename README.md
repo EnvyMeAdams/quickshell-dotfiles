@@ -165,9 +165,33 @@ tty login.
 | Laptop extras | brightnessctl, bluez (battery is read from `/sys`, nothing to install) |
 | Tray | Quickshell with SystemTray (hidden if your build lacks it) |
 | Login screen | greetd, python3, polkit (for its power buttons) |
+| Tailscale panel (optional) | tailscale; your user set as operator once: `doas tailscale set --operator=$USER` |
+| Signal (optional) | signal-cli (Flatpak `org.asamk.SignalCli` or system), qrencode for the linking code |
+| Spotify extras (optional) | Spicetify + `extras/spicetify/island-bridge.js`, Qt WebSockets (`dev-qt/qtwebsockets`) |
+| Fluxer (optional) | the Fluxer desktop app (its alerts are restyled; no login needed) |
 
 Screenshot and Night Light pick the right tool for your compositor. Leave
 them empty in Settings → Commands for automatic, or type your own command.
+
+## Optional integrations
+
+Each one stays invisible until what it needs is there, and each has a page in
+Settings with its setup steps behind a button.
+
+- **Tailscale**: Hub › Tailscale (and a Control tile) shows only if `tailscale`
+  is installed. Connect/disconnect, your devices (copy IP or name), exit nodes
+  including Mullvad servers grouped by country, LAN access, DNS, routes,
+  Shields Up, advertising as an exit node, saving Taildrop files. A pill card
+  says which exit node you're on, and warns if it goes offline.
+- **Signal**: links this computer to your phone like Signal Desktop (QR code
+  in Settings), then runs `signal-cli daemon --socket` itself. Messages pop up
+  in the pill with quick reactions and Reply; Hub › Messages has your chats.
+  Messages stay in memory only.
+- **Fluxer**: Fluxer's desktop alerts get their own look, a Messages tab and
+  muted words. Clicking one opens the app.
+- **Spotify**: play/pause/art work through MPRIS as before. With the Spicetify
+  bridge you also get the heart, synced lyrics in the pill, Canvas behind the
+  media card and Up Next. Setup: Settings › Media › Spotify › How to Set Up.
 
 ## Compositor support
 

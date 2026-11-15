@@ -34,15 +34,27 @@ Item {
         }
     }
 
+    // synced lyrics (Spotify + Spicetify) take the title's place, one line at a time
+    readonly property bool lyric: Config.s.spotifyLyricsPill && Spotify.on && Spotify.line !== ""
     PText {
+        id: titleText
         anchors.left: art.right
         anchors.leftMargin: 8
         anchors.right: controls.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
-        text: (root.p?.trackTitle ?? "") + ((root.p?.trackArtist) ? "  ·  " + root.p.trackArtist : "")
+        text: root.lyric ? Spotify.line : (root.p?.trackTitle ?? "") + ((root.p?.trackArtist) ? "  ·  " + root.p.trackArtist : "")
         font.pixelSize: 12
         font.bold: true
+        font.italic: root.lyric
+        onTextChanged: if (root.lyric) lyricIn.restart()
+        SequentialAnimation {
+            id: lyricIn
+            ParallelAnimation {
+                NumberAnimation { target: titleText; property: "opacity"; from: 0; to: 1; duration: Theme.dur(260) }
+                NumberAnimation { target: titleText; property: "anchors.verticalCenterOffset"; from: 6; to: 0; duration: Theme.dur(260); easing.type: Easing.OutCubic }
+            }
+        }
     }
 
     Row {
