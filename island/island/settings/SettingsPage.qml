@@ -28,7 +28,7 @@ Item {
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
           opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
-          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Hint For", "Lock Checks", "Popup for Permissions", "Popup Position", "doas", "App Prompts"] },
+          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Hint For", "Lock Checks", "Popup for Permissions", "Popup Position", "Swipes", "Wait For", "doas", "App Prompts"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
           opts: ["Mic", "Desktop Sound", "Mode", "FPS", "Folder"] },
         { label: "Wallpaper", icon: "image", tint: Theme.pastels.sand, comp: wallpaperC,
@@ -345,6 +345,8 @@ Item {
                 key: "fpPopupPos"
                 options: [{ v: "upper", l: "Upper" }, { v: "center", l: "Middle" }]
             }
+            SSlider { label: "Swipes"; hint: "doas and app prompts, then the password"; key: "fpPamTries"; from: 1; to: 5; step: 1 }
+            SSlider { label: "Wait For"; hint: "Without a finger, then the password"; key: "fpPamWait"; from: 5; to: 30; step: 1; suffix: "s" }
             SRow { label: "doas"; hint: FingerprintWatch.pamDoas ? "Fingerprint on" : "Password only" }
             SRow { label: "App Prompts"; hint: FingerprintWatch.pamPolkit ? "Fingerprint on" : "Password only" }
             SLink { icon: "terminal"; label: "Set Up doas & App Prompts"; tint: Theme.pastels.yellow; onClicked: stack.push(fingerprintPamC) }
@@ -358,10 +360,11 @@ Item {
             HelpCard {
                 readonly property string s: Compositor.scripts.replace(Config.home, "~") + "/fingerprint-pam.sh"
                 text: "Lets doas and app permission prompts (polkit) take your fingerprint. " +
-                      "You get 2 swipes; after 10 seconds without a finger, or 2 misses, it asks for " +
-                      "your password as usual. In a terminal, press any key to go straight to the " +
+                      "You get " + Config.s.fpPamTries + (Config.s.fpPamTries === 1 ? " swipe" : " swipes") +
+                      "; after " + Config.s.fpPamWait + " seconds without a finger, or that many misses, it asks for " +
+                      "your password as usual (Swipes and Wait For change this). In a terminal, press any key to go straight to the " +
                       "password (what you typed is thrown away, so type it again at the prompt). " +
-                      "Permission windows can't skip: the password comes after 10 seconds.\n\n" +
+                      "Permission windows can't skip: the password comes after the wait.\n\n" +
                       "Turn it on (in a terminal):\n" +
                       "   doas sh " + s + " install\n\n" +
                       "Check:   sh " + s + " status\n" +

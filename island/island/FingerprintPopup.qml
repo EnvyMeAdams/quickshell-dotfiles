@@ -53,6 +53,20 @@ PanelWindow {
         Behavior on height { NumberAnimation { duration: Theme.dur(200); easing.type: Easing.OutCubic } }
         transform: Translate { id: shakeX }
 
+        // who's asking (from the helper's note)
+        Chip {
+            readonly property string who: FingerprintWatch.source === "doas" ? "doas"
+                                        : FingerprintWatch.source === "polkit-1" ? "App Permission" : ""
+            visible: who !== "" && !card.matched
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.margins: 14
+            text: who
+            size: 22
+            fontSize: 11
+            fill: FingerprintWatch.source === "doas" ? Theme.pastels.butter : Theme.pastels.sky
+        }
+
         Item {
             id: sensor
             anchors.horizontalCenter: parent.horizontalCenter
@@ -145,7 +159,7 @@ PanelWindow {
                                      : FingerprintWatch.source === "polkit-1" ? "in the permission window" : "")
                     : FingerprintWatch.hint
                       || (FingerprintWatch.canSkip ? "or press any key in the terminal to type your password"
-                          : FingerprintWatch.source === "polkit-1" ? "your password comes after 10 seconds"
+                          : FingerprintWatch.source === "polkit-1" ? "your password comes after " + Config.s.fpPamWait + " seconds"
                           : "")
             }
         }

@@ -5,7 +5,8 @@
 #
 # Exit 0 = recognised, PAM skips the password. Anything else = PAM asks for
 # your password as usual.
-#   - 2 swipes; gives up after 10 s without a finger
+#   - 2 swipes; gives up after 10 s without a finger (both adjustable in the
+#     island: Settings > Lock & Saver > Fingerprint, kept to 1-5 swipes, 5-30 s)
 #   - in a terminal (doas): any key skips straight to the password
 #   - retries quietly when the sensor fails to open (the VFS5011 resets itself
 #     on every open, and the next open often fails)
@@ -22,6 +23,14 @@ user=${PAM_USER:-}
 [ -z "${PAM_RHOST:-}" ] || exit 1
 command -v fprintd-verify >/dev/null 2>&1 || exit 1
 fprintd-list "$user" 2>/dev/null | grep -q '#[0-9]' || exit 1
+
+# swipes and wait from the island's settings, clamped (a broken file can't do harm)
+home=$(getent passwd "$user" | cut -d: -f6)
+settings="$home/.config/island/settings.json"
+num() { sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p" "$settings" 2>/dev/null | head -n 1; }
+clamp() { v=${1:-$2}; [ "$v" -lt "$3" ] 2>/dev/null && v=$3; [ "$v" -gt "$4" ] 2>/dev/null && v=$4; echo "$v"; }
+tries=$(clamp "$(num fpPamTries)" 2 1 5)
+waitfor=$(clamp "$(num fpPamWait)" 10 5 30)
 
 service=${PAM_SERVICE:-unknown}
 run=/run/user/$(id -u)
@@ -56,8 +65,8 @@ give_up() { tell password; keep_note=1; exit 1; }
 result=$(mktemp) || exit 1
 attempts() {
     local misses=0 opens=0 out
-    while [ "$misses" -lt 2 ]; do
-        out=$(timeout 10 fprintd-verify "$user" 2>&1)
+    while [ "$misses" -lt "$tries" ]; do
+        out=$(timeout "$waitfor" fprintd-verify "$user" 2>&1)
         case "$out" in
         *verify-match*)
             echo match > "$result"; return ;;
@@ -70,9 +79,9 @@ attempts() {
             continue ;;
         *verify-no-match*)
             misses=$((misses + 1))
-            [ "$misses" -lt 2 ] && echo "No match, swipe again" ;;
+            [ "$misses" -lt "$tries" ] && echo "No match, swipe again" ;;
         *)
-            echo no > "$result"; return ;;   # 10 s without a finger, or unexpected
+            echo no > "$result"; return ;;   # no finger in time, or unexpected
         esac
     done
     echo no > "$result"
@@ -82,7 +91,7 @@ tell listening
 if [ "$tty" = 1 ]; then
     echo "Swipe your finger, or press any key to type your password"
 else
-    echo "Swipe your finger; the password prompt comes after 10 seconds"
+    echo "Swipe your finger; the password prompt comes after $waitfor seconds"
 fi
 attempts &
 worker=$!
