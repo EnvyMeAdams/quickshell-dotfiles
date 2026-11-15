@@ -7,7 +7,8 @@
 //           spicetify config extensions island-bridge.js && spicetify apply
 (function islandBridge() {
     const S = window.Spicetify;
-    if (!S || !S.Player || !S.Player.data || !S.CosmosAsync || !S.Platform) {
+    // connect as soon as Spicetify is up; a track isn't needed yet
+    if (!S || !S.Player || !S.Player.addEventListener || !S.CosmosAsync) {
         setTimeout(islandBridge, 500);
         return;
     }
@@ -36,9 +37,10 @@
         };
     }
 
-    function current() { return S.Player.data && (S.Player.data.item || S.Player.data.track); }
+    function current() { const d = S.Player.data; return d && (d.item || d.track); }
 
     function state() {
+        if (!current()) return;
         send({ type: "state", liked: !!S.Player.getHeart(), playing: S.Player.isPlaying(),
                ms: S.Player.getProgress(), at: Date.now() });
     }
