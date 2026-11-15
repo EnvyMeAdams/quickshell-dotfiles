@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import qs.services
 import qs.theme
 import qs.components
+import qs.island.hub      // ControlActions (lock, sleep, reboot, …) lives here
 
 // Power menu in the middle of the display you're on: the screen dims and a
 // row (or column, Settings › Home › Power Menu) of big buttons pops in.
