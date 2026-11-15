@@ -290,7 +290,7 @@ Item {
             SToggle { label: "Signal"; hint: Config.s.signalAccount ? Config.s.signalAccount : "Link first (below)"; key: "signalOn" }
             SToggle { label: "Start signal-cli"; hint: "Off if you run your own daemon"; key: "signalDaemon" }
             SText { label: "Socket"; hint: "Empty = the island's own"; key: "signalSocket"; placeholder: "$XDG_RUNTIME_DIR/island-signal.sock" }
-            SText { label: "signal-cli"; hint: "Command or full path"; key: "signalCli"; fieldWidth: 240 }
+            SText { label: "signal-cli"; hint: Signal.kind === "flatpak" ? "Using the Flatpak" : "Command or full path (Flatpak is found by itself)"; key: "signalCli"; fieldWidth: 240 }
             SToggle { label: "Read Receipts"; hint: "Sent when you open a chat"; key: "msgReceipts" }
             SToggle { label: "Hide Signal Desktop Alerts"; hint: "While the island is connected"; key: "signalHideDesktop" }
             SLink { icon: "qr_code_2"; label: "Link & Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(signalSetupC) }
@@ -840,7 +840,7 @@ Item {
                     ["Accent", "ffmpegthumbnailer for videos"],
                     ["Laptop", "brightnessctl, bluez"],
                     ["Tailscale", "tailscale (net-vpn/tailscale), operator set once"],
-                    ["Signal", "signal-cli + Java 25, qrencode"],
+                    ["Signal", "signal-cli (Flatpak org.asamk.SignalCli or system), qrencode"],
                     ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"],
                     ["Fluxer", "the Fluxer desktop app"]
                 ]

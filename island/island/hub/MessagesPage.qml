@@ -62,7 +62,7 @@ Item {
                 PText {
                     width: parent.width
                     font.bold: true
-                    text: !Signal.installed ? "signal-cli isn't installed"
+                    text: !Signal.installed ? "signal-cli isn't installed (system or Flatpak)"
                         : !Signal.enabled ? "Signal isn't linked yet" : "Connecting…"
                 }
                 PText {

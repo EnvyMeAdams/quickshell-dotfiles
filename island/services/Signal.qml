@@ -12,11 +12,20 @@ Singleton {
     id: root
 
     readonly property bool enabled: Config.s.signalOn && Config.s.signalAccount !== ""
+    // signal-cli can be a normal install or the Flathub one (org.asamk.SignalCli);
+    // the island finds whichever is there. Flatpak is sandboxed, so its socket
+    // lives in the one runtime folder both sides can see, and its keys live
+    // under ~/.var/app.
+    readonly property string flatpakId: "org.asamk.SignalCli"
+    property string kind: ""                // native | flatpak | "" (not found)
+    readonly property bool installed: kind !== ""
+    readonly property var cli: kind === "flatpak" ? ["flatpak", "run", flatpakId] : [Config.s.signalCli]
+    readonly property string runDir: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
     readonly property string socketPath: Config.s.signalSocket
-        || ((Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/island-signal.sock")
-    readonly property string dataDir: (Quickshell.env("XDG_DATA_HOME") || (Config.home + "/.local/share")) + "/signal-cli"
+        || (kind === "flatpak" ? runDir + "/app/" + flatpakId + "/island-signal.sock" : runDir + "/island-signal.sock")
+    readonly property string dataDir: kind === "flatpak" ? Config.home + "/.var/app/" + flatpakId + "/data/signal-cli"
+        : (Quickshell.env("XDG_DATA_HOME") || (Config.home + "/.local/share")) + "/signal-cli"
 
-    property bool installed: false
     property bool connected: sock.connected
     property string status: ""              // last thing worth telling you (errors, "Connected")
     property var convs: ({})                // key -> conversation
@@ -31,8 +40,10 @@ Singleton {
     // ── is signal-cli there? ──
     Process {
         running: true
-        command: ["sh", "-c", "command -v \"$1\" >/dev/null && echo yes", "sh", Config.s.signalCli]
-        stdout: StdioCollector { onStreamFinished: root.installed = text.trim() === "yes" }
+        command: ["sh", "-c", "if command -v \"$1\" >/dev/null; then echo native; " +
+                              "elif command -v flatpak >/dev/null && flatpak info \"$2\" >/dev/null 2>&1; then echo flatpak; fi",
+                  "sh", Config.s.signalCli, root.flatpakId]
+        stdout: StdioCollector { onStreamFinished: root.kind = text.trim() }
     }
 
     // ── the daemon (unless you run your own) ──
@@ -40,8 +51,11 @@ Singleton {
     Process {
         id: daemon
         running: root.daemonWanted
-        command: ["sh", "-c", "rm -f \"$2\"; exec \"$1\" -a \"$3\" daemon --socket \"$2\"",
-                  "sh", Config.s.signalCli, root.socketPath, Config.s.signalAccount]
+        // an older daemon left on this socket (e.g. after a Quickshell restart)
+        // would lock the account, so it goes first
+        command: ["sh", "-c", "sock=\"$1\"; acct=\"$2\"; shift 2; pkill -f -- \"daemon --socket $sock\" 2>/dev/null; " +
+                              "mkdir -p \"$(dirname \"$sock\")\"; rm -f \"$sock\"; exec \"$@\" -a \"$acct\" daemon --socket \"$sock\"",
+                  "sh", root.socketPath, Config.s.signalAccount].concat(root.cli)
         stderr: SplitParser {
             onRead: line => {
                 // signal-cli is chatty; keep only what explains a failure
@@ -276,7 +290,7 @@ Singleton {
     readonly property string qrFile: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/island-signal-link.png"
     Process {
         id: linker
-        command: ["sh", "-c", "exec \"$1\" link -n \"Island\" 2>&1", "sh", Config.s.signalCli]
+        command: ["sh", "-c", "exec \"$@\" link -n \"Island\" 2>&1", "sh"].concat(root.cli)
         stdout: SplitParser {
             onRead: line => {
                 const uri = line.match(/(sgnl:\/\/linkdevice\S+|tsdevice:\S+)/);

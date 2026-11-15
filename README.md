@@ -166,7 +166,7 @@ tty login.
 | Tray | Quickshell with SystemTray (hidden if your build lacks it) |
 | Login screen | greetd, python3, polkit (for its power buttons) |
 | Tailscale panel (optional) | tailscale; your user set as operator once: `doas tailscale set --operator=$USER` |
-| Signal (optional) | signal-cli (needs Java 25), qrencode for the linking code |
+| Signal (optional) | signal-cli (Flatpak `org.asamk.SignalCli` or system), qrencode for the linking code |
 | Spotify extras (optional) | Spicetify + `extras/spicetify/island-bridge.js`, Qt WebSockets (`dev-qt/qtwebsockets`) |
 | Fluxer (optional) | the Fluxer desktop app (its alerts are restyled; no login needed) |
 

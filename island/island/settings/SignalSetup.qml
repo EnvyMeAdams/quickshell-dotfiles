@@ -22,10 +22,16 @@ Column {
             PText {
                 font.bold: true
                 color: Signal.connected ? Theme.onPastel : Theme.ink
-                text: !Signal.installed ? "signal-cli: not found (" + Config.s.signalCli + ")"
+                text: !Signal.installed ? "signal-cli: not found (" + Config.s.signalCli + " or Flatpak)"
                     : Signal.connected ? "Connected as " + Config.s.signalAccount
                     : Config.s.signalAccount ? "Linked as " + Config.s.signalAccount + (Config.s.signalOn ? "" : " · turned off")
                     : "Not linked"
+            }
+            PText {
+                visible: Signal.installed
+                text: "Using " + (Signal.kind === "flatpak" ? "the Flatpak (" + Signal.flatpakId + ")" : "signal-cli from your system")
+                font.pixelSize: 11
+                color: Signal.connected ? Theme.onPastel : Theme.sub
             }
             PText {
                 width: parent.width
@@ -95,13 +101,15 @@ Column {
     HelpCard {
         width: parent.width
         text: "What you need (Gentoo):\n" +
-              "• signal-cli: net-im/signal-cli-bin from the GURU overlay, or the release from github.com/AsamK/signal-cli. " +
-              "Current versions need a Java 25 runtime (e.g. dev-java/openjdk-jre-bin:25).\n" +
+              "• signal-cli, either one works:\n" +
+              "   Flatpak (brings its own Java, updates quickly): flatpak install flathub org.asamk.SignalCli\n" +
+              "   Gentoo: doas emerge --ask net-im/signal-cli-bin (needs a recent Java; can trail upstream)\n" +
+              "   signal-cli releases older than about three months can stop working, so keep it updated.\n" +
               "• qrencode, to draw the linking code: doas emerge --ask media-gfx/qrencode\n\n" +
               "Then press Link This Computer and scan the code. The island fills in your number and turns Signal on.\n\n" +
               "How it runs: the island starts \"signal-cli daemon --socket\" itself (Settings › Messages › Signal › Start signal-cli), " +
               "so there's no service to set up. Keep it running: Signal unlinks devices that stay offline for weeks.\n\n" +
-              "Privacy: signal-cli keeps its keys in ~/.local/share/signal-cli, as private as Signal Desktop's folder " +
+              "Privacy: signal-cli keeps its keys in " + Signal.dataDir.replace(Config.home, "~") + ", as private as Signal Desktop's folder " +
               "(your disk encryption covers it). The island keeps messages in memory only, so chats start fresh after a restart; " +
               "your phone keeps the full history.\n\n" +
               "If you also use Signal Desktop, turn on Hide Signal Desktop Alerts so messages don't pop up twice.\n\n" +
