@@ -312,7 +312,11 @@ Item {
                     anchors.centerIn: parent
                     glassSource: fpCard.missed ? null : root.glass
                     width: 300 + offset
-                    height: 196 + offset
+                    // grows with its text, so a two-line hint never sits on the edge
+                    height: 22 + 84 + 14 + fpText.implicitHeight + 32 + offset
+                    Behavior on height { NumberAnimation { duration: Theme.dur(200); easing.type: Easing.OutCubic } }
+                    // a missed swipe flashes the ring and scan line a deeper rose
+                    readonly property color missInk: Qt.darker(Theme.pastels.pink, 1.45)
                     radius: 32
                     fill: fpCard.matched ? Theme.pastels.mint : fpCard.missed ? Theme.pastels.pink : Theme.card
                     readonly property bool matched: root.session?.fp === "matched"
@@ -337,7 +341,7 @@ Item {
                             width: parent.width; height: width; radius: width / 2
                             color: "transparent"
                             border.width: 2
-                            border.color: fpCard.matched ? Theme.onPastel : Theme.accent
+                            border.color: fpCard.matched ? Theme.onPastel : fpCard.missed ? fpCard.missInk : Theme.accent
                             opacity: 0
                             SequentialAnimation on scale {
                                 running: root.fpShown && !fpCard.matched && fpCard.visible
@@ -376,8 +380,9 @@ Item {
                             visible: root.fpShown && !fpCard.matched
                             Rectangle {
                                 id: scanLine
-                                x: 14; width: parent.width - 28; height: 3; radius: 1.5
-                                color: Theme.accent
+                                x: 14; width: parent.width - 28; height: fpCard.missed ? 4 : 3; radius: height / 2
+                                color: fpCard.missed ? fpCard.missInk : Theme.accent
+                                Behavior on color { ColorAnimation { duration: Theme.dur(120) } }
                                 opacity: 0.9
                                 SequentialAnimation on y {
                                     running: root.fpShown && !fpCard.matched && fpCard.visible
@@ -390,6 +395,7 @@ Item {
                     }
 
                     Column {
+                        id: fpText
                         anchors.top: sensor.bottom
                         anchors.topMargin: 14
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -409,6 +415,9 @@ Item {
                             font.pixelSize: 12
                             opacity: 0.75
                             color: fpCard.matched || fpCard.missed ? Theme.onPastel : Theme.ink
+                            wrapMode: Text.Wrap
+                            elide: Text.ElideNone
+                            maximumLineCount: 2
                             text: fpCard.matched ? "" : (root.session?.fpHint || "or start typing your password")
                         }
                     }
@@ -445,9 +454,18 @@ Item {
                     : reason === "tries" ? "Too many tries · tap the fingerprint or type your password"
                     : reason === "typed" ? "Tap the fingerprint to use it instead"
                     : "Move the mouse to use your fingerprint"
-                opacity: show ? 0.8 : 0
+                // fades after Settings > Fingerprint > Hint For (0 = stays); the mouse brings it back
+                property bool fresh: true
+                function poke() {
+                    fresh = true;
+                    if (Config.s.fpHintFor > 0) hintFade.restart();
+                }
+                onShowChanged: if (show) poke()
+                onReasonChanged: if (show) poke()
+                Timer { id: hintFade; interval: Math.max(1, Config.s.fpHintFor) * 1000; onTriggered: fpRestHint.fresh = false }
+                opacity: show && (fresh || Config.s.fpHintFor === 0) ? 0.8 : 0
                 visible: opacity > 0
-                Behavior on opacity { NumberAnimation { duration: Theme.dur(220) } }
+                Behavior on opacity { NumberAnimation { duration: Theme.dur(fpRestHint.fresh ? 220 : 600) } }
             }
         }
 
@@ -512,7 +530,7 @@ Item {
         z: 2
         hoverEnabled: !root.saverPhase
         onClicked: { pw.forceActiveFocus(); root.session?.fpWake(); }
-        onPositionChanged: root.session?.fpWake()
+        onPositionChanged: { root.session?.fpWake(); if (fpRestHint.show) fpRestHint.poke(); }
     }
 
     // any click or key ends the screensaver part

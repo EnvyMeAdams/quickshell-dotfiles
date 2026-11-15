@@ -26,7 +26,7 @@ Item {
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
           opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
-          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Lock Checks"] },
+          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Hint For", "Lock Checks"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
           opts: ["Mic", "Desktop Sound", "Mode", "FPS", "Folder"] },
         { label: "Wallpaper", icon: "image", tint: Theme.pastels.sand, comp: wallpaperC,
@@ -277,6 +277,7 @@ Item {
             title: "Fingerprint"
             SToggle { label: "Use Fingerprint"; hint: "Unlock the lock screen with a finger"; key: "lockFingerprint" }
             SSlider { label: "Listen For"; hint: "Then move the mouse or tap the icon"; key: "fpListen"; from: 10; to: 180; step: 5; suffix: "s" }
+            SSlider { label: "Hint For"; hint: "Help line under the password · 0 = always"; key: "fpHintFor"; from: 0; to: 30; step: 1; suffix: "s" }
             SRow {
                 label: "Reader"
                 hint: (Fingerprint.device || "Found") + " · " +
