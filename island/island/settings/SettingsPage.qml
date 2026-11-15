@@ -243,15 +243,23 @@ Item {
             HelpCard {
                 text: "Play, pause, skip and album art already work with any Spotify (through MPRIS). " +
                       "Spicetify adds the heart, synced lyrics, Canvas and Up Next.\n\n" +
-                      "1. Install Spotify and Spicetify. On Gentoo, Spotify lives in /opt/spotify and Spicetify needs to write there once:\n" +
-                      "   doas chmod a+wr /opt/spotify /opt/spotify/Apps -R\n" +
-                      "   spicetify config spotify_path /opt/spotify\n\n" +
+                      "1. Install Spicetify (no doas needed):\n" +
+                      "   curl -fsSL https://raw.githubusercontent.com/spicetify/cli/main/install.sh | sh\n" +
+                      "   Open Spotify, log in, leave it a minute, then quit it.\n\n" +
+                      "   Gentoo Spotify (media-sound/spotify) lives in /opt/spotify/spotify-client:\n" +
+                      "   doas chmod a+wr /opt/spotify/spotify-client\n" +
+                      "   doas chmod a+wr -R /opt/spotify/spotify-client/Apps\n" +
+                      "   spicetify config spotify_path /opt/spotify/spotify-client\n" +
+                      "   spicetify config prefs_path $HOME/.config/spotify/prefs   (type your full home path)\n\n" +
+                      "   Flatpak Spotify instead: see spicetify.app › Installation › Spotify installed via Flatpak.\n\n" +
                       "2. Copy the bridge from this repo and turn it on:\n" +
                       "   cp ~/quickshell-dotfiles/extras/spicetify/island-bridge.js ~/.config/spicetify/Extensions/\n" +
                       "   spicetify config extensions island-bridge.js\n" +
                       "   spicetify backup apply\n\n" +
                       "3. Quickshell needs QtWebSockets: doas emerge --ask dev-qt/qtwebsockets, then restart Quickshell.\n\n" +
-                      "After every Spotify update (emerge), run: spicetify backup apply. Otherwise the update quietly removes it.\n\n" +
+                      "After every Spotify update through emerge: run the two chmod lines again, then\n" +
+                      "   spicetify restore backup apply\n" +
+                      "Otherwise the update quietly removes it.\n\n" +
                       "The bridge only listens on 127.0.0.1 (this computer). Canvas uses Spotify's internal API, " +
                       "so an update can break it; the card then simply shows no video."
             }
