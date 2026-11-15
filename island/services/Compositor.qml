@@ -1,6 +1,7 @@
 pragma Singleton
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 
 // Everything that differs between compositors goes through here, so the rest
@@ -64,6 +65,17 @@ Singleton {
     function screenshotCmd(mode) {
         const auto = "sh '" + scripts + "/screenshot.sh' " + (mode || "region");
         return pick(Config.s.screenshotCmd, "hyprshot -m region", auto) || auto;
+    }
+    // take a screenshot; the screenshot sound plays only if one was saved
+    // (screenshot.sh exits 1 when you cancel the selection)
+    function takeScreenshot(mode) {
+        if (shotProc.running) return;
+        shotProc.command = ["sh", "-c", screenshotCmd(mode || "region")];
+        shotProc.running = true;
+    }
+    Process {
+        id: shotProc
+        onExited: code => { if (code === 0) Sounds.play("screenshot"); }
     }
     function logoutCmd() {
         const u = (Config.s.logoutCmd ?? "").trim();

@@ -19,6 +19,7 @@ Singleton {
 
     function lock() {
         if (locked) return;
+        Sounds.play("lock");
         Island.close();
         if (Config.s.builtinLock && sessionReady) {
             saverOnLock = saver;

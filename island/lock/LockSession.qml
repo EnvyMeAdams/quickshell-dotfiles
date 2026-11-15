@@ -125,6 +125,7 @@ Scope {
                 root.unlockNow();
             } else {
                 root.status = result === PamResult.Failed ? "wrong" : "error";
+                if (result === PamResult.Failed) Sounds.play("wrongPassword");
                 root.password = "";
             }
         }
@@ -143,7 +144,7 @@ Scope {
                 console.info("island fingerprint:", message);
                 if (/short|match|again|centre|center|remove/i.test(message)) root.fpSwiped = true;
                 root.fpHint = message;
-                if (/match/i.test(message)) root.fpMiss();
+                if (/match/i.test(message)) { root.fpMiss(); Sounds.play("fpMiss"); }
             }
         }
         onCompleted: result => {
@@ -153,6 +154,7 @@ Scope {
                 fpWindow.stop();
                 root.fp = "matched";
                 root.fpHint = "";
+                Sounds.play("fpMatch");
                 fpHold.restart();                        // show the check mark, then unlock
                 return;
             }
@@ -208,6 +210,8 @@ Scope {
         id: leave
         interval: Config.s.lockAnim ? 420 : 0
         onTriggered: {
+            // a fingerprint unlock with its own sound doesn't also play the unlock one
+            if (!(root.fp === "matched" && Sounds.fileFor("fpMatch") !== "")) Sounds.play("unlock");
             root.password = "";
             root.stopFp("off");
             root.fp = "off";

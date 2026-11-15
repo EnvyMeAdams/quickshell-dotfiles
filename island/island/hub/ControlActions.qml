@@ -20,7 +20,7 @@ Singleton {
         Island.close();
         shot.restart();
     }
-    Timer { id: shot; interval: 350; onTriggered: root.run(Compositor.screenshotCmd("region")) }
+    Timer { id: shot; interval: 350; onTriggered: Compositor.takeScreenshot("region") }
 
     function power(kind) {
         Island.close();

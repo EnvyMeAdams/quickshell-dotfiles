@@ -59,6 +59,7 @@ ShellRoot {
             try { NightLight.on; } catch (e) { missing.push("Night Light"); }
             try { Brightness.available; } catch (e) { missing.push("Brightness"); }
             try { Fingerprint.available; } catch (e) { missing.push("Fingerprint"); }
+            try { Sounds.qtOk; } catch (e) { missing.push("Sounds"); }
             try { Battery.present; } catch (e) { missing.push("Battery"); }
             try { Awake.saverBlocked; } catch (e) { missing.push("Keep Awake"); }
             try { Recorder.recording; } catch (e) { missing.push("Recording"); }
@@ -92,7 +93,7 @@ ShellRoot {
         function micmute(): void { Audio.toggleMic(); }
         function nightlight(): void { NightLight.toggle(); }
         function screenshot(mode: string): void {
-            Quickshell.execDetached(["sh", "-c", Compositor.screenshotCmd(mode || "region")]);
+            Compositor.takeScreenshot(mode || "region");
         }
 
         function logout(): void { ControlActions.power("logout"); }

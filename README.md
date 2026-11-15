@@ -150,6 +150,7 @@ tty login.
 | Visualizer | cava |
 | Wallpaper | Qt Multimedia for videos, ffmpegthumbnailer for video thumbnails |
 | Lock | PAM (`island/lock/pam/password.conf`) |
+| Sounds (optional, your own files) | Qt Multimedia; without it `pw-play` (PipeWire) |
 | Fingerprint unlock | fprintd built with PAM (`island/lock/pam/fingerprint.conf`); only shows on machines with a reader and an enrolled finger |
 | Web search | curl, xdg-utils |
 | Launcher | wl-clipboard, xdg-utils, fd (optional, faster file search) |

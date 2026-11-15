@@ -13,6 +13,8 @@ Singleton {
     property int percent: 0
     property string status: ""              // Charging | Discharging | Full | Not charging
     readonly property bool charging: status === "Charging" || status === "Full"
+    property string lastStatus: ""          // previous reading, to notice the charger going in
+    property bool lowWarned: false          // low-battery sound plays once per discharge
     readonly property bool shown: Config.s.showBattery === "on" || (Config.s.showBattery === "auto" && present)
 
     readonly property string icon: {
@@ -37,6 +39,17 @@ Singleton {
                 const sp = t.indexOf(" ");
                 root.percent = parseInt(sp > 0 ? t.slice(0, sp) : t) || 0;
                 root.status = sp > 0 ? t.slice(sp + 1) : "";
+
+                // sounds: charger plugged in (not on the first reading), low battery once
+                const was = root.lastStatus;
+                root.lastStatus = root.status;
+                if (was !== "" && was !== "Charging" && was !== "Full" && root.status === "Charging")
+                    Sounds.play("charger");
+                if (root.status === "Discharging" && root.percent <= 15) {
+                    if (!root.lowWarned) { root.lowWarned = true; Sounds.play("lowBattery"); }
+                } else if (root.charging || root.percent > 20) {
+                    root.lowWarned = false;
+                }
             }
         }
     }
@@ -47,4 +60,12 @@ Singleton {
         triggeredOnStart: true
         onTriggered: read.running = true
     }
+
+    // the kernel announces charger and battery changes; re-read right away
+    Process {
+        running: root.present
+        command: ["sh", "-c", "command -v udevadm >/dev/null && exec udevadm monitor --kernel --subsystem-match=power_supply"]
+        stdout: SplitParser { onRead: line => { if (line.indexOf("change") >= 0) settle.restart(); } }
+    }
+    Timer { id: settle; interval: 600; onTriggered: read.running = true }
 }

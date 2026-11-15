@@ -42,7 +42,7 @@ Singleton {
         stderr: StdioCollector { id: startErr }
         onExited: code => {
             root.busy = false;
-            if (code === 0) { root.recording = true; root.seconds = 0; }
+            if (code === 0) { root.recording = true; root.seconds = 0; Sounds.play("recordStart"); }
             else if (code !== 1) {   // 1 = region picking cancelled
                 root.error = startErr.text.trim() || "Recording failed";
                 Quickshell.execDetached(["notify-send", "Recording", root.error]);
@@ -63,6 +63,7 @@ Singleton {
             root.busy = false;
             root.recording = false;
             root.lastFile = stopOut.text.trim();
+            Sounds.play("recordStop");
             if (root.lastFile)
                 Quickshell.execDetached(["notify-send", "Recording Saved", root.lastFile.replace(Config.home, "~")]);
         }
