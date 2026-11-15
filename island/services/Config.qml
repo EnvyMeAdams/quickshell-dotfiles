@@ -172,6 +172,41 @@ Singleton {
             property bool showTray: true
             property bool powerConfirm: true
 
+            // Tailscale (only shows if tailscale is installed)
+            property bool tsTab: true                // its own tab in the hub
+            property bool tsActivity: true           // "Connected via …" when the exit node changes
+            property bool tsLostAlert: true          // warning when the exit node goes offline
+            property bool tsPillFlag: false          // tiny flag in the pill while on an exit node
+            property bool tsTaildrop: false          // save files sent to this device
+            property string tsTaildropDir: "~/Downloads"
+
+            // Messages: Signal (signal-cli) and Fluxer
+            property bool signalOn: false
+            property string signalAccount: ""        // your number, e.g. +15551234567 (set by linking)
+            property bool signalDaemon: true         // the island starts signal-cli itself
+            property string signalCli: "signal-cli"
+            property string signalSocket: ""         // empty = $XDG_RUNTIME_DIR/island-signal.sock
+            property bool msgPopups: true
+            property bool msgPreviews: true          // off: "New Message" only
+            property bool msgLockPreviews: false
+            property bool msgReceipts: true          // send read receipts when you open a chat
+            property bool msgTyping: true            // show when someone is typing
+            property var msgAllow: []                // names that still pop up during Focus
+            property bool signalHideDesktop: true    // hide Signal Desktop's own alerts while connected
+            property string msgReactions: "👍 ❤️ 😂"
+            property bool fluxerStyle: true          // Fluxer alerts get their own look + Messages tab
+            property bool fluxerPopups: true
+            property var fluxerMuted: []             // words: alerts containing any stay silent
+
+            // Spotify (Spicetify bridge)
+            property bool spotifyBridge: true
+            property int spotifyPort: 47719
+            property bool spotifyLyricsPill: true
+            property bool spotifyCanvas: true
+            property bool spotifyHeart: true
+            property bool spotifyUpNext: true
+            property bool spotifyToast: false        // pill shows the new song briefly
+
             // Commands
             property string logoutCmd: ""            // empty = automatic for your compositor
             property string lockCmd: ""              // fallback only; empty = hyprlock or swaylock

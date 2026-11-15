@@ -7,14 +7,18 @@ import qs.island.settings
 Item {
     id: root
 
+    // Messages and Tailscale only appear when they have something to show
     readonly property var tabs: [
         { id: "home", icon: "home", label: "Home" },
         { id: "sound", icon: "volume_up", label: "Sound" },
         { id: "control", icon: "tune", label: "Control" },
-        { id: "notifications", icon: "notifications", label: "Alerts" },
+        { id: "notifications", icon: "notifications", label: "Alerts" }
+    ].concat(Messages.available ? [{ id: "messages", icon: "chat", label: "Messages" }] : [])
+     .concat(Tailscale.installed && Config.s.tsTab ? [{ id: "tailscale", icon: "hub", label: "Tailscale" }] : [])
+     .concat([
         { id: "wallpaper", icon: "image", label: "Wallpaper" },
         { id: "settings", icon: "settings", label: "Settings" }
-    ]
+    ])
 
     Row {
         id: tabRow
@@ -38,7 +42,8 @@ Item {
 
                 Rectangle {
                     // `tab`, not `parent`: PButton puts its children in an inner item
-                    visible: tab.modelData.id === "notifications" && Notifs.count > 0 && !tab.on
+                    visible: !tab.on && ((tab.modelData.id === "notifications" && Notifs.count > 0)
+                                      || (tab.modelData.id === "messages" && Messages.unread > 0))
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.margins: 4
@@ -88,7 +93,8 @@ Item {
         anchors.bottomMargin: 14
         sourceComponent: ({
             home: homeC, sound: soundC, control: controlC,
-            notifications: notifC, wallpaper: wallC, settings: settingsC
+            notifications: notifC, wallpaper: wallC, settings: settingsC,
+            messages: messagesC, tailscale: tailscaleC
         })[Island.hubTab] ?? homeC
     }
 
@@ -98,4 +104,6 @@ Item {
     Component { id: notifC; NotificationsPage {} }
     Component { id: wallC; WallpaperPage {} }
     Component { id: settingsC; SettingsPage {} }
+    Component { id: messagesC; MessagesPage {} }
+    Component { id: tailscaleC; TailscalePage {} }
 }

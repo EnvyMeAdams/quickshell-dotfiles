@@ -31,6 +31,21 @@ Item {
             }
             Tile {
                 width: root.tileW
+                visible: Tailscale.installed
+                icon: Tailscale.exitNode ? "vpn_lock" : "hub"
+                title: "Tailscale"
+                sub: !Tailscale.daemon ? "Not Running"
+                   : Tailscale.state === "NeedsLogin" ? "Logged Out"
+                   : !Tailscale.up ? "Off"
+                   : Tailscale.exitNode ? Tailscale.flag(Tailscale.exitNode.code) + " " + (Tailscale.exitNode.city || Tailscale.exitNode.name)
+                   : "On"
+                active: Tailscale.up
+                tint: Theme.pastels.aqua
+                chevron: true
+                onClicked: Island.hubTab = "tailscale"
+            }
+            Tile {
+                width: root.tileW
                 visible: Bt.available
                 icon: Bt.enabled ? "bluetooth" : "bluetooth_disabled"
                 title: "Bluetooth"
