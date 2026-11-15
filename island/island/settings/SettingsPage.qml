@@ -28,7 +28,7 @@ Item {
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
           opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
-          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Hint For", "Lock Checks"] },
+          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Hint For", "Lock Checks", "Popup for Permissions", "Popup Position", "doas", "App Prompts"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
           opts: ["Mic", "Desktop Sound", "Mode", "FPS", "Folder"] },
         { label: "Wallpaper", icon: "image", tint: Theme.pastels.sand, comp: wallpaperC,
@@ -337,6 +337,45 @@ Item {
                 hint: Fingerprint.lockUses + (Fingerprint.swipe && Fingerprint.fingers > 1 ? " (first in the list)" : "")
             }
             SLink { icon: "help"; label: "How to Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(fingerprintHelpC) }
+
+            // doas + app permission prompts (polkit)
+            SToggle { label: "Popup for Permissions"; hint: "doas and app prompts asking for your finger"; key: "fpPopup" }
+            SChoice {
+                label: "Popup Position"
+                key: "fpPopupPos"
+                options: [{ v: "upper", l: "Upper" }, { v: "center", l: "Middle" }]
+            }
+            SRow { label: "doas"; hint: FingerprintWatch.pamDoas ? "Fingerprint on" : "Password only" }
+            SRow { label: "App Prompts"; hint: FingerprintWatch.pamPolkit ? "Fingerprint on" : "Password only" }
+            SLink { icon: "terminal"; label: "Set Up doas & App Prompts"; tint: Theme.pastels.yellow; onClicked: stack.push(fingerprintPamC) }
+            Component.onCompleted: FingerprintWatch.checkPam()
+        }
+    }
+    Component {
+        id: fingerprintPamC
+        SPage {
+            title: "doas & App Prompts"
+            HelpCard {
+                readonly property string s: Compositor.scripts.replace(Config.home, "~") + "/fingerprint-pam.sh"
+                text: "Lets doas and app permission prompts (polkit) take your fingerprint. " +
+                      "You get 2 swipes; after 10 seconds without a finger, or 2 misses, it asks for " +
+                      "your password as usual. In a terminal, press any key to go straight to the " +
+                      "password (what you typed is thrown away, so type it again at the prompt). " +
+                      "Permission windows can't skip: the password comes after 10 seconds.\n\n" +
+                      "Turn it on (in a terminal):\n" +
+                      "   doas sh " + s + " install\n\n" +
+                      "Check:   sh " + s + " status\n" +
+                      "Turn it off:   doas sh " + s + " remove\n\n" +
+                      "Test:   doas -L; doas true\n\n" +
+                      "What it changes: copies a small helper, root-owned, to " +
+                      "/usr/local/libexec/island-fingerprint-auth, and adds one line to /etc/pam.d/doas " +
+                      "and /etc/pam.d/polkit-1 (each backed up once to .island-bak; if polkit's file only " +
+                      "exists in /usr/lib/pam.d, a marked copy is made in /etc/pam.d and removed again " +
+                      "on remove). Your password " +
+                      "always still works. It only checks your own account and never runs over SSH.\n\n" +
+                      "Before changing PAM files, keep a root shell open in another terminal " +
+                      "(doas -s) until you've tested it."
+            }
         }
     }
     Component {
@@ -345,7 +384,8 @@ Item {
             title: "How to Set Up"
             HelpCard {
                 text: "The lock screen listens for a finger as soon as it appears. Start typing to use " +
-                      "your password instead. Login and doas still use your password.\n\n" +
+                      "your password instead. The login screen always uses your password; doas and app " +
+                      "prompts can use your finger too (Set Up doas & App Prompts).\n\n" +
                       "Set up a finger (in a terminal):\n" +
                       "   fprintd-enroll\n" +
                       "   fprintd-enroll -f left-index-finger   (another finger)\n\n" +

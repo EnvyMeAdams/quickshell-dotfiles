@@ -136,6 +136,8 @@ Singleton {
             property bool lockFingerprint: true     // only matters with a reader + enrolled finger
             property int fpListen: 60                // seconds the lock listens before it rests
             property int fpHintFor: 6                // seconds the resting hint stays (0 = always)
+            property bool fpPopup: true              // popup when doas / app prompts ask for a finger
+            property string fpPopupPos: "upper"      // upper | center
 
             // Sounds (your own files; every event starts silent)
             property bool soundsOn: true
