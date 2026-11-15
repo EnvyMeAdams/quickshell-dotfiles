@@ -185,8 +185,10 @@ Singleton {
         id: prep
         // a private folder first: only you can read what's inside
         running: Config.s.signalKeepChats
-        command: ["sh", "-c", "d=$(dirname \"$1\"); mkdir -p \"$d\" && chmod 700 \"$d\"; [ -e \"$1\" ] && chmod 600 \"$1\"; true", "sh", root.chatFile]
-        onExited: store.path = root.chatFile
+        // the file exists from the start (empty), so loading never waits on "file not found"
+        command: ["sh", "-c", "d=$(dirname \"$1\"); mkdir -p \"$d\" && chmod 700 \"$d\"; " +
+                              "[ -s \"$1\" ] || printf '{}' > \"$1\"; chmod 600 \"$1\"; true", "sh", root.chatFile]
+        onExited: { store.path = root.chatFile; giveUp.restart(); }
     }
     FileView {
         id: store
@@ -196,6 +198,8 @@ Singleton {
         onLoadFailed: root.restored = true           // nothing saved yet
     }
     Timer { id: saveLater; interval: 1500; onTriggered: root.save() }
+    // if loading never reports back, don't hold saving hostage
+    Timer { id: giveUp; interval: 4000; onTriggered: if (!root.restored) { console.warn("island: saved Signal chats didn't load; saving fresh"); root.restored = true; root.save(); } }
     function save() {
         if (!Config.s.signalKeepChats || store.path === "" || !restored) return;
         const keep = {};
@@ -226,6 +230,7 @@ Singleton {
             }
         } catch (e) { console.warn("island: couldn't read saved Signal chats:", e); }
         restored = true;
+        if (Object.keys(convs).length) saveLater.restart();
     }
     Process { id: forget; command: ["sh", "-c", "rm -f -- \"$1\"", "sh", root.chatFile] }
     function clearSaved() {

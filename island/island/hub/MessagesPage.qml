@@ -230,11 +230,10 @@ Item {
                 clip: true
                 spacing: 6
                 boundsBehavior: Flickable.StopAtBounds
-                model: root.c?.msgs ?? []
-                // new or changed messages: stay at the newest
-                onModelChanged: Qt.callLater(positionViewAtEnd)
-                onCountChanged: Qt.callLater(positionViewAtEnd)
-                Component.onCompleted: positionViewAtEnd()
+                // newest first, laid out from the bottom up: the latest message is
+                // always at the bottom without any scrolling (no jumps on redraw)
+                verticalLayoutDirection: ListView.BottomToTop
+                model: root.c ? root.c.msgs.slice().reverse() : []
 
                 delegate: Item {
                     id: b
