@@ -3,15 +3,14 @@ import QtQuick
 import Quickshell
 
 // What the Messages tab and the message popup show: Signal chats and
-// Fluxer alerts, plus which chat is open and what's in the popup.
+// which chat is open and what's in the popup.
 Singleton {
     id: root
 
-    readonly property bool available: Signal.on || (Config.s.fluxerStyle && Notifs.fluxerCount > 0)
-    readonly property int unread: (Signal.on ? Signal.unread : 0) + (Config.s.fluxerStyle ? Notifs.fluxerCount : 0)
+    readonly property bool available: Signal.on
+    readonly property int unread: Signal.on ? Signal.unread : 0
 
     property string open: ""                // open Signal chat key ("" = list)
-    property string source: "signal"        // signal | fluxer
     property bool focusReply: false         // the reply field takes the keyboard when the chat opens
 
     // popup
@@ -20,7 +19,6 @@ Singleton {
     readonly property var popConv: popKey ? Signal.snapshot(popKey, Signal.rev) : null
 
     function openChat(key, reply) {
-        source = "signal";
         open = key ?? "";
         focusReply = !!reply && open !== "";
         Island.dismiss();

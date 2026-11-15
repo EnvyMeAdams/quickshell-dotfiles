@@ -33,6 +33,10 @@ ShellRoot {
         model: Quickshell.screens
         ChargingPopup {}
     }
+    Variants {
+        model: Quickshell.screens
+        PowerMenu {}
+    }
     Saver {}
 
     // The lock (needs PAM) and idle timers (need a newer Quickshell) are
@@ -113,6 +117,7 @@ ShellRoot {
         }
 
         function logout(): void { ControlActions.power("logout"); }
+        function power(): void { Island.togglePower(); }
         function awake(): void { Awake.keepAwake = !Awake.keepAwake; }
         function record(): void { Recorder.toggle(); }
         function recordRegion(): void { Recorder.toggle("region"); }

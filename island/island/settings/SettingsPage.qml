@@ -22,13 +22,13 @@ Item {
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
           opts: ["Visualizer", "Bars", "Camera Light", "Spotify", "Lyrics in Pill", "Canvas", "Heart", "Up Next", "Song Change", "Port"] },
         { label: "Messages", icon: "chat", tint: Theme.pastels.mint, comp: messagesC,
-          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Keep Chats", "Clear Saved Chats", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account", "Fluxer", "Fluxer Popups", "Muted Words"] },
+          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Keep Chats", "Clear Saved Chats", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account"] },
         { label: "Tailscale", icon: "hub", tint: Theme.pastels.aqua, comp: tailscaleC,
           opts: ["Hub Tab", "Exit Node Activity", "Exit Node Offline", "Pill Flag", "Taildrop", "Taildrop Folder", "Set Up"] },
         { label: "Sounds", icon: "volume_up", tint: Theme.pastels.mint, comp: soundsC,
           opts: ["Sounds", "Volume", "Sound Folder", "How It Works"].concat(Sounds.events.map(e => e.l)) },
         { label: "Home", icon: "home", tint: Theme.pastels.peach, comp: homeSetC,
-          opts: ["Battery", "Tray", "Confirm Power"] },
+          opts: ["Battery", "Tray", "Power Menu", "Layout", "Dim Screen", "Confirm Power", "Keyboard Hints", "Keybind"] },
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
           opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
@@ -282,13 +282,6 @@ Item {
             SToggle { label: "Typing"; hint: "Show when someone is typing"; key: "msgTyping" }
             SWords { label: "Focus Allows"; hint: "Names that still pop up during Focus"; key: "msgAllow"; placeholder: "Mom, Alex" }
             SText { label: "Reactions"; hint: "Up to five, separated by spaces"; key: "msgReactions"; fieldWidth: 200 }
-            SLink {
-                icon: "forum"
-                label: "Fluxer"
-                hint: !Config.s.fluxerStyle ? "Off" : Notifs.fluxerCount + " in Alerts"
-                tint: Theme.pastels.lavender
-                onClicked: stack.push(fluxerC)
-            }
         }
     }
     Component {
@@ -331,32 +324,6 @@ Item {
         SPage {
             title: "Link Signal"
             SignalSetup { width: parent.width }
-        }
-    }
-    Component {
-        id: fluxerC
-        SPage {
-            title: "Fluxer"
-            SToggle { label: "Fluxer"; hint: "Own look for Fluxer alerts + a Messages tab"; key: "fluxerStyle" }
-            SToggle { label: "Fluxer Popups"; key: "fluxerPopups" }
-            SWords { label: "Muted Words"; hint: "Alerts containing any stay silent (servers, channels)"; key: "fluxerMuted"; placeholder: "#memes, Big Server" }
-            SLink { icon: "help"; label: "How It Works"; tint: Theme.pastels.yellow; onClicked: stack.push(fluxerHelpC) }
-        }
-    }
-    Component {
-        id: fluxerHelpC
-        SPage {
-            title: "Fluxer"
-            HelpCard {
-                text: "The island reads the alerts the Fluxer desktop app already sends, so there's no token or login to set up, " +
-                      "and nothing extra talks to Fluxer's servers.\n\n" +
-                      "Fluxer alerts get a lilac Fluxer badge, count in the pill's chat bubble, and appear under Messages › Fluxer. " +
-                      "Clicking one in the pill jumps into the app.\n\n" +
-                      "Muted Words: alerts containing any of them are kept in Alerts but don't pop up or make a sound, " +
-                      "e.g. a busy server's name or #channel.\n\n" +
-                      "Limits: the Fluxer app has to be running, and replies happen in the app. " +
-                      "Note that Fluxer isn't end-to-end encrypted, so keep private chats on Signal."
-            }
         }
     }
     Component {
@@ -408,7 +375,86 @@ Item {
                 onClicked: stack.push(chargeC)
             }
             SToggle { label: "Tray"; hint: "App icons, top right"; key: "showTray" }
+            SLink {
+                icon: "power_settings_new"
+                label: "Power Menu"
+                hint: (Config.s.powerMenuLayout === "vertical" ? "Vertical" : "Horizontal") + (Config.s.powerConfirm ? " · Confirm" : "")
+                tint: Theme.pastels.pink
+                onClicked: stack.push(powerMenuC)
+            }
+        }
+    }
+    Component {
+        id: powerMenuC
+        SPage {
+            id: pmPage
+            title: "Power Menu"
+            readonly property var names: ({ lock: "Lock", saver: "Saver", sleep: "Sleep", logout: "Log Out", reboot: "Reboot", poweroff: "Power" })
+            readonly property var icons: ({ lock: "lock", saver: "movie", sleep: "dark_mode", logout: "logout", reboot: "restart_alt", poweroff: "power_settings_new" })
+            readonly property var order: {
+                const o = (Config.s.powerMenuOrder ?? []).filter(k => names[k]);
+                for (const k of Object.keys(names)) if (!o.includes(k)) o.push(k);
+                return o;
+            }
+            function move(i, d) {
+                const o = order.slice();
+                const j = i + d;
+                if (j < 0 || j >= o.length) return;
+                [o[i], o[j]] = [o[j], o[i]];
+                Config.s.powerMenuOrder = o;
+            }
+            function setShown(k, on) {
+                const h = (Config.s.powerMenuHidden ?? []).filter(x => x !== k);
+                if (!on) h.push(k);
+                Config.s.powerMenuHidden = h;
+            }
+
+            SRow {
+                label: "Try It"
+                hint: "Opens the menu now"
+                PButton { anchors.verticalCenter: parent.verticalCenter; text: "Open"; icon: "power_settings_new"; tint: Theme.pastels.pink; checked: true; onClicked: Island.openPower() }
+            }
+            SChoice {
+                label: "Layout"
+                key: "powerMenuLayout"
+                options: [{ v: "horizontal", l: "Horizontal" }, { v: "vertical", l: "Vertical" }]
+            }
+            SSlider { label: "Dim Screen"; key: "powerMenuDim"; from: 0; to: 90; step: 5; suffix: "%" }
             SToggle { label: "Confirm Power"; hint: "Click twice for Log Out, Reboot, Power"; key: "powerConfirm" }
+            SToggle { label: "Keyboard Hints"; hint: "Shows the keys and numbers"; key: "powerMenuHints" }
+            Repeater {
+                model: pmPage.order
+                delegate: SRow {
+                    id: pmRow
+                    required property string modelData
+                    required property int index
+                    readonly property bool shown: !(Config.s.powerMenuHidden ?? []).includes(modelData)
+                    label: pmPage.names[pmRow.modelData]
+                    hint: pmRow.shown ? "Key " + (pmPage.order.filter(k => !(Config.s.powerMenuHidden ?? []).includes(k)).indexOf(pmRow.modelData) + 1) : "Hidden"
+                    Row {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 6
+                        PButton { icon: "arrow_upward"; iconSize: 15; faceHeight: 28; offset: 2; pad: 4; opacity: pmRow.index > 0 ? 1 : 0.3; onClicked: pmPage.move(pmRow.index, -1) }
+                        PButton { icon: "arrow_downward"; iconSize: 15; faceHeight: 28; offset: 2; pad: 4; opacity: pmRow.index < pmPage.order.length - 1 ? 1 : 0.3; onClicked: pmPage.move(pmRow.index, 1) }
+                        PToggle { anchors.verticalCenter: parent.verticalCenter; checked: pmRow.shown; onToggled: pmPage.setShown(pmRow.modelData, !pmRow.shown) }
+                    }
+                }
+            }
+            SLink { icon: "keyboard"; label: "Keybind"; hint: "Open it without the hub"; tint: Theme.pastels.yellow; onClicked: stack.push(powerKeyC) }
+        }
+    }
+    Component {
+        id: powerKeyC
+        SPage {
+            title: "Power Menu Keybind"
+            HelpCard {
+                text: "The power menu is the IPC call \"power\" (opens it, or closes it if open).\n\n" +
+                      "Hyprland (Lua config), e.g. SUPER + Escape:\n" +
+                      "   hl.bind(\"SUPER + Escape\", hl.dsp.exec_cmd(\"quickshell ipc call island power\"))\n\n" +
+                      "MangoWM (~/.config/mango/config.conf):\n" +
+                      "   bind=SUPER,Escape,spawn,quickshell ipc call island power\n\n" +
+                      "Inside the menu: arrows move, Enter or Space picks, 1–6 jump to a button, Esc closes."
+            }
         }
     }
     Component {
@@ -769,7 +815,8 @@ Item {
                     ["Windows", "windows"], ["Windows Back", "windowsPrev"],
                     ["Focus", "dnd"], ["Mic", "micmute"], ["Night", "nightlight"], ["Screenshot", "screenshot region"],
                     ["Record", "record"], ["Record Region", "recordRegion"],
-                    ["Keep Awake", "awake"], ["Lock", "lock"], ["Saver", "saver"], ["Close", "close"]
+                    ["Keep Awake", "awake"], ["Lock", "lock"], ["Saver", "saver"], ["Power Menu", "power"],
+                    ["Messages", "messages"], ["Tailscale", "tailscale"], ["Close", "close"]
                 ]
                 delegate: SRow {
                     required property var modelData
@@ -859,8 +906,7 @@ Item {
                     ["Laptop", "brightnessctl, bluez"],
                     ["Tailscale", "tailscale (net-vpn/tailscale), operator set once"],
                     ["Signal", "signal-cli (Flatpak org.asamk.SignalCli or system), qrencode"],
-                    ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"],
-                    ["Fluxer", "the Fluxer desktop app"]
+                    ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"]
                 ]
                 delegate: SRow {
                     required property var modelData

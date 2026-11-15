@@ -65,19 +65,21 @@ Item {
         }
     }
 
-    // Home only: power buttons on the left, tray + battery on the right
+    // power button on the left; tray + battery on the right (Home only)
     readonly property bool home: Island.hubTab === "home"
     readonly property real side: (width - tabRow.width) / 2 - 14 - 10
 
-    PowerBar {
+    // one power button (every tab); the menu opens in the middle of the screen
+    PButton {
         z: 5
         anchors.left: parent.left
         anchors.leftMargin: 14
         anchors.verticalCenter: tabRow.verticalCenter
         anchors.verticalCenterOffset: -1
-        opacity: root.home ? 1 : 0
-        visible: opacity > 0
-        Behavior on opacity { NumberAnimation { duration: Theme.dur(160) } }
+        icon: "power_settings_new"
+        tint: Theme.pastels.pink
+        checked: Island.powerMenu
+        onClicked: Island.openPower()
     }
     StatusBar {
         z: 5

@@ -85,6 +85,7 @@ hl.bind("ALT + Space", island("launcher"))
 hl.bind("ALT + Tab",   island("windows"))
 hl.bind("SUPER + S",   island("sound"))
 hl.bind("SUPER + L",   island("lock"))
+hl.bind("SUPER + Escape", island("power"))   -- power menu
 ```
 
 MangoWM (`~/.config/mango/config.conf`):
@@ -94,6 +95,7 @@ bind=ALT,space,spawn,quickshell ipc call island launcher
 bind=ALT,Tab,spawn,quickshell ipc call island windows
 bind=SUPER,s,spawn,quickshell ipc call island sound
 bind=SUPER,l,spawn,quickshell ipc call island lock
+bind=SUPER,Escape,spawn,quickshell ipc call island power
 ```
 
 ## Install the login screen
@@ -168,7 +170,6 @@ tty login.
 | Tailscale panel (optional) | tailscale; your user set as operator once: `doas tailscale set --operator=$USER` |
 | Signal (optional) | signal-cli (Flatpak `org.asamk.SignalCli` or system), qrencode for the linking code |
 | Spotify extras (optional) | Spicetify + `extras/spicetify/island-bridge.js`, Qt WebSockets (`dev-qt/qtwebsockets`) |
-| Fluxer (optional) | the Fluxer desktop app (its alerts are restyled; no login needed) |
 
 Screenshot and Night Light pick the right tool for your compositor. Leave
 them empty in Settings → Commands for automatic, or type your own command.
@@ -186,9 +187,7 @@ Settings with its setup steps behind a button.
 - **Signal**: links this computer to your phone like Signal Desktop (QR code
   in Settings), then runs `signal-cli daemon --socket` itself. Messages pop up
   in the pill with quick reactions and Reply; Hub › Messages has your chats.
-  Messages stay in memory only.
-- **Fluxer**: Fluxer's desktop alerts get their own look, a Messages tab and
-  muted words. Clicking one opens the app.
+  Chats are saved privately so they survive restarts (Keep Chats).
 - **Spotify**: play/pause/art work through MPRIS as before. With the Spicetify
   bridge you also get the heart, synced lyrics in the pill, Canvas behind the
   media card and Up Next. Setup: Settings › Media › Spotify › How to Set Up.

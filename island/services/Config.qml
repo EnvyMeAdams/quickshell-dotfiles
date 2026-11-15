@@ -171,6 +171,11 @@ Singleton {
             property bool chargePopupGlow: true      // breathing ring + light sweep while charging
             property bool showTray: true
             property bool powerConfirm: true
+            property string powerMenuLayout: "horizontal"   // horizontal | vertical
+            property int powerMenuDim: 45                   // % the screen darkens behind it
+            property bool powerMenuHints: true              // keyboard hints + numbers
+            property var powerMenuOrder: ["lock", "saver", "sleep", "logout", "reboot", "poweroff"]
+            property var powerMenuHidden: []
 
             // Tailscale (only shows if tailscale is installed)
             property bool tsTab: true                // its own tab in the hub
@@ -180,7 +185,7 @@ Singleton {
             property bool tsTaildrop: false          // save files sent to this device
             property string tsTaildropDir: "~/Downloads"
 
-            // Messages: Signal (signal-cli) and Fluxer
+            // Messages: Signal (signal-cli)
             property bool signalOn: false
             property bool signalKeepChats: true      // save chats so they survive restarts
             property string signalAccount: ""        // your number, e.g. +15551234567 (set by linking)
@@ -195,9 +200,6 @@ Singleton {
             property var msgAllow: []                // names that still pop up during Focus
             property bool signalHideDesktop: true    // hide Signal Desktop's own alerts while connected
             property string msgReactions: "👍 ❤️ 😂"
-            property bool fluxerStyle: true          // Fluxer alerts get their own look + Messages tab
-            property bool fluxerPopups: true
-            property var fluxerMuted: []             // words: alerts containing any stay silent
 
             // Spotify (Spicetify bridge)
             property bool spotifyBridge: true

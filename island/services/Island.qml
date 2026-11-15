@@ -13,6 +13,11 @@ Singleton {
     property string popup: ""
     property bool held: false
 
+    // the power menu (island/PowerMenu.qml), in the middle of the focused display
+    property bool powerMenu: false
+    function openPower() { close(); powerMenu = true; }
+    function togglePower() { powerMenu ? (powerMenu = false) : openPower(); }
+
     // live activity: a short card in the pill (Tailscale exit node, …)
     //   { icon, emoji, title, sub, tint, tab }  — tab: hub tab a click opens
     property var activity: ({})
