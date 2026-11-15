@@ -5,6 +5,7 @@
 //
 // Install:  cp island-bridge.js ~/.config/spicetify/Extensions/
 //           spicetify config extensions island-bridge.js && spicetify apply
+console.log("[island-bridge] file loaded");
 (function islandBridge() {
     const S = window.Spicetify;
     // connect as soon as Spicetify is up; a track isn't needed yet
@@ -21,11 +22,17 @@
         if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj));
     }
 
+    let warned = false;
     function connect() {
         try { ws = new WebSocket("ws://127.0.0.1:" + PORT); }
-        catch (e) { setTimeout(connect, 5000); return; }
-        ws.onopen = () => { lastUri = ""; track(); };
-        ws.onclose = () => { ws = null; setTimeout(connect, 5000); };
+        catch (e) { console.warn("[island-bridge] can't open a WebSocket:", e); setTimeout(connect, 5000); return; }
+        ws.onopen = () => { console.log("[island-bridge] connected to the island on port " + PORT); warned = false; lastUri = ""; track(); };
+        ws.onclose = (e) => {
+            ws = null;
+            if (!warned) console.warn("[island-bridge] can't reach the island (code " + e.code + "), retrying every 5 s");
+            warned = true;
+            setTimeout(connect, 5000);
+        };
         ws.onerror = () => {};
         ws.onmessage = (e) => {
             let m;
@@ -115,5 +122,6 @@
     // the heart and queue can change without a song change
     setInterval(() => { if (ws) { state(); send({ type: "queue", next: upNext() }); } }, 5000);
 
+    console.log("[island-bridge] Spicetify ready, connecting to 127.0.0.1:" + PORT);
     connect();
 })();
