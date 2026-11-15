@@ -26,6 +26,9 @@ Scope {
     property string fpHint: ""          // the sensor's last message ("Swipe was too short…")
     property bool fpTooMany: false      // ran out of tries: only the icon restarts it
     property bool fpTyped: false        // you typed this lock: the mouse no longer brings it back
+    // why it's resting, for the hint under the password field:
+    // timeout | busy (reader wouldn't open) | tries | typed
+    property string fpRest: ""
     signal fpMiss()                     // a swipe that didn't match: the widget shakes
 
     readonly property bool fpWanted: Config.s.lockFingerprint && Fingerprint.available
@@ -34,6 +37,7 @@ Scope {
     readonly property bool fpShown: (fp === "listening" || fp === "matched") && password === ""
 
     property int fpRetries: 0           // quick re-opens after the sensor's USB hiccup
+    property bool fpSwiped: false       // a finger was read this attempt (so it's not a hiccup)
     property double fpStarted: 0
 
     function submit() {
@@ -49,13 +53,17 @@ Scope {
         fpHint = "";
         fpTooMany = false;
         fp = "listening";
+        fpRest = "";
+        fpSwiped = false;
         fpStarted = Date.now();
+        console.info("island fingerprint: listening");
         fpPam.start();
         fpWindow.restart();
     }
     function stopFp(next) {
         fpWindow.stop();
         fpRetry.stop();
+        fpHold.stop();
         // state first: an abort may report "completed" right away, and that
         // must not look like a failed swipe
         if (fp !== "matched") fp = next;
@@ -69,6 +77,7 @@ Scope {
     // typing switches to the password
     onPasswordChanged: if (password !== "") {
         fpTyped = true;
+        fpRest = "typed";
         if (fp === "listening") stopFp("idle");
     }
     onFpWantedChanged: {
@@ -88,6 +97,7 @@ Scope {
                 root.fpRetries = 0;
                 root.fpTooMany = false;
                 root.fpTyped = false;
+                root.fpRest = "";
                 root.fpHint = "";
                 fpStart.restart();
             } else {
@@ -130,30 +140,39 @@ Scope {
             // first message is the instruction ("Swipe your right index finger…"),
             // the widget has its own; keep only the useful ones
             if (messageIsError) {
+                console.info("island fingerprint:", message);
+                if (/short|match|again|centre|center|remove/i.test(message)) root.fpSwiped = true;
                 root.fpHint = message;
                 if (/match/i.test(message)) root.fpMiss();
             }
         }
         onCompleted: result => {
+            const took = Date.now() - root.fpStarted;
+            console.info("island fingerprint: finished", PamResult.toString(result), "after", took, "ms");
             if (result === PamResult.Success) {
                 fpWindow.stop();
                 root.fp = "matched";
                 root.fpHint = "";
-                root.unlockNow();
+                fpHold.restart();                        // show the check mark, then unlock
                 return;
             }
             if (root.fp !== "listening") return;       // we stopped it ourselves
-            // some sensors (VFS5011) fail to open right after their last use;
-            // a quick failure gets a quiet second try
-            if (Date.now() - root.fpStarted < 2500 && root.fpRetries < 2) {
+            // some sensors (VFS5011) reset themselves when opened, and the next open
+            // fails while they come back; a quick failure is retried, a bit slower each time
+            const hiccup = !root.fpSwiped && took < 6000 && result !== PamResult.MaxTries;
+            if (hiccup && root.fpRetries < 4) {
                 root.fpRetries++;
+                console.info("island fingerprint: reader not ready, retry", root.fpRetries, "in", fpRetry.interval, "ms");
                 fpRetry.restart();
                 return;
             }
             root.fpRetries = 0;
             if (result === PamResult.MaxTries) {
                 root.fpTooMany = true;
+                root.fpRest = "tries";
                 root.fpHint = "Too many tries";
+            } else {
+                root.fpRest = hiccup ? "busy" : "timeout";
             }
             fpWindow.stop();
             root.fp = "idle";
@@ -162,10 +181,11 @@ Scope {
     Timer { id: fpStart; interval: 350; onTriggered: root.startFp() }
     Timer {
         id: fpRetry
-        interval: 1500
+        interval: 1500 + root.fpRetries * 1000     // 2.5 s, 3.5 s, 4.5 s, 5.5 s
         onTriggered: {
             if (!root.fpWanted || root.password !== "" || fpPam.active || root.fp !== "listening") return;
             root.fpHint = "";
+            root.fpSwiped = false;
             root.fpStarted = Date.now();
             fpPam.start();
         }
@@ -174,7 +194,13 @@ Scope {
     Timer {
         id: fpWindow
         interval: Math.max(10, Config.s.fpListen) * 1000
-        onTriggered: { root.fpHint = ""; root.stopFp("idle"); }
+        onTriggered: { root.fpHint = ""; root.fpRest = "timeout"; root.stopFp("idle"); }
+    }
+    // a moment on the check mark before the unlock animation
+    Timer {
+        id: fpHold
+        interval: Config.s.lockAnim ? 650 : 0
+        onTriggered: root.unlockNow()
     }
 
     // let the unlock animation play before the lock lets go

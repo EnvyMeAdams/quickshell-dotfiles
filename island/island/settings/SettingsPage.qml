@@ -26,7 +26,7 @@ Item {
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
           opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
-          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For"] },
+          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For", "Lock Checks"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
           opts: ["Mic", "Desktop Sound", "Mode", "FPS", "Folder"] },
         { label: "Wallpaper", icon: "image", tint: Theme.pastels.sand, comp: wallpaperC,
@@ -281,6 +281,11 @@ Item {
                 label: "Reader"
                 hint: (Fingerprint.device || "Found") + " · " +
                       (Fingerprint.fingers === 1 ? "1 finger" : Fingerprint.fingers + " fingers")
+            }
+            SRow {
+                visible: Fingerprint.fingers > 0
+                label: "Lock Checks"
+                hint: Fingerprint.lockUses + (Fingerprint.swipe && Fingerprint.fingers > 1 ? " (first in the list)" : "")
             }
             SLink { icon: "help"; label: "How to Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(fingerprintHelpC) }
         }
