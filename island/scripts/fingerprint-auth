@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Fingerprint step for doas and app permission prompts (polkit), run by
 # pam_exec. Installed root-owned to /usr/local/libexec/island-fingerprint-auth
 # by fingerprint-pam.sh; PAM uses that copy, not this file.
@@ -6,10 +6,15 @@
 # Exit 0 = recognised, PAM skips the password. Anything else = PAM asks for
 # your password as usual.
 #   - 2 swipes; gives up after 10 s without a finger
+#   - in a terminal (doas): any key skips straight to the password
 #   - retries quietly when the sensor fails to open (the VFS5011 resets itself
 #     on every open, and the next open often fails)
 #   - only for your own account, never over SSH, nothing at all without a
 #     reader or an enrolled finger
+#
+# It leaves a note for the island popup in your runtime folder
+# ($XDG_RUNTIME_DIR/island-fingerprint, only readable by you):
+#   "<state> <service> <tty>"   state: listening | password
 PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 user=${PAM_USER:-}
@@ -18,26 +23,85 @@ user=${PAM_USER:-}
 command -v fprintd-verify >/dev/null 2>&1 || exit 1
 fprintd-list "$user" 2>/dev/null | grep -q '#[0-9]' || exit 1
 
-echo "Swipe your finger, or wait for the password prompt"
-misses=0
-opens=0
-while [ "$misses" -lt 2 ]; do
-    out=$(timeout 10 fprintd-verify "$user" 2>&1)
-    case "$out" in
-    *verify-match*)
-        exit 0 ;;
-    *PermissionDenied*|*"Not Authorized"*|*"no fingers"*)
-        exit 1 ;;
-    *"transfer failed"*|*"failed to claim"*|*"No devices"*|*"Open failed"*)
-        opens=$((opens + 1))
-        [ "$opens" -le 3 ] || exit 1
-        sleep 2
-        continue ;;
-    *verify-no-match*)
-        misses=$((misses + 1))
-        [ "$misses" -lt 2 ] && echo "No match, swipe again" ;;
-    *)
-        exit 1 ;;   # 10 s without a finger, or something unexpected
-    esac
+service=${PAM_SERVICE:-unknown}
+run=/run/user/$(id -u)
+[ -d "$run" ] && [ -w "$run" ] || run=""
+note=${run:+$run/island-fingerprint}
+tell() { [ -n "$note" ] && (umask 077; printf '%s %s %s\n' "$1" "$service" "$tty" > "$note") 2>/dev/null; }
+
+# a terminal we can read keys from? (doas yes, app prompts no)
+tty=0
+if { exec 3</dev/tty; } 2>/dev/null && [ -t 3 ]; then tty=1; fi
+
+worker=""
+keep_note=0
+# stop a process and everything it started (so nothing keeps PAM's output open)
+killtree() {
+    local c
+    for c in $(pgrep -P "$1" 2>/dev/null); do killtree "$c"; done
+    kill -TERM "$1" 2>/dev/null
+}
+# shellcheck disable=SC2329  # run by the trap below
+cleanup() {
+    [ -n "$worker" ] && killtree "$worker"
+    # a "password" note stays for the popup to read (the next request replaces it)
+    [ -n "$note" ] && [ "$keep_note" = 0 ] && rm -f "$note"
+}
+trap cleanup EXIT
+
+# give up: tell the popup, PAM moves on to the password
+give_up() { tell password; keep_note=1; exit 1; }
+
+# the fingerprint attempts, in the background so a key press can interrupt them
+result=$(mktemp) || exit 1
+attempts() {
+    local misses=0 opens=0 out
+    while [ "$misses" -lt 2 ]; do
+        out=$(timeout 10 fprintd-verify "$user" 2>&1)
+        case "$out" in
+        *verify-match*)
+            echo match > "$result"; return ;;
+        *PermissionDenied*|*"Not Authorized"*|*"no fingers"*)
+            echo no > "$result"; return ;;
+        *"transfer failed"*|*"failed to claim"*|*"No devices"*|*"Open failed"*)
+            opens=$((opens + 1))
+            [ "$opens" -le 3 ] || { echo no > "$result"; return; }
+            sleep 2
+            continue ;;
+        *verify-no-match*)
+            misses=$((misses + 1))
+            [ "$misses" -lt 2 ] && echo "No match, swipe again" ;;
+        *)
+            echo no > "$result"; return ;;   # 10 s without a finger, or unexpected
+        esac
+    done
+    echo no > "$result"
+}
+
+tell listening
+if [ "$tty" = 1 ]; then
+    echo "Swipe your finger, or press any key to type your password"
+else
+    echo "Swipe your finger; the password prompt comes after 10 seconds"
+fi
+attempts &
+worker=$!
+
+while kill -0 "$worker" 2>/dev/null; do
+    if [ "$tty" = 1 ]; then
+        if IFS= read -r -s -n 1 -t 0.3 _ <&3; then
+            # skip: stop the reader, throw away anything else typed so far
+            killtree "$worker"; worker=""
+            while IFS= read -r -s -n 64 -t 0.05 _ <&3; do :; done
+            rm -f "$result"
+            give_up
+        fi
+    else
+        sleep 0.3
+    fi
 done
-exit 1
+worker=""
+
+r=$(cat "$result" 2>/dev/null); rm -f "$result"
+[ "$r" = match ] && exit 0
+give_up

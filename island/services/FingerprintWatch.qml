@@ -16,10 +16,17 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    // idle | listening | miss | matched
+    // idle | listening | miss | matched | password (gave up: type your password)
     property string state: "idle"
     property string hint: ""
     signal missed()
+
+    // from the doas/app-prompt helper's note ($XDG_RUNTIME_DIR/island-fingerprint):
+    // who's asking, and whether a key press can skip to the password (terminal)
+    property string source: ""          // "doas" | "polkit-1" | "" (something else, e.g. fprintd-verify)
+    property bool canSkip: false
+    readonly property string notePath: (Quickshell.env("XDG_RUNTIME_DIR") || "/tmp") + "/island-fingerprint"
+    function readNote() { if (!noteRead.running) noteRead.running = true; }
 
     readonly property bool wanted: Config.s.fpPopup && Fingerprint.reader
     readonly property bool shown: state !== "idle" && !LockState.locked
@@ -40,8 +47,10 @@ Singleton {
         if (line.indexOf("VerifyFingerSelected") >= 0) {
             hideLater.stop();
             hint = "";
+            if (state === "idle" || state === "password") { source = ""; canSkip = false; }
             state = "listening";
             safety.restart();
+            readNote();
             return;
         }
         const m = line.match(/VerifyStatus \('([\w-]+)', (true|false)\)/);
@@ -71,6 +80,35 @@ Singleton {
     }
 
     Timer { id: hideLater; onTriggered: { root.state = "idle"; root.hint = ""; } }
+
+    // the helper's note: "<listening|password> <service> <tty 0|1>"
+    Process {
+        id: noteRead
+        command: ["cat", root.notePath]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const p = text.trim().split(/\s+/);
+                if (p.length < 3) return;
+                root.source = p[1];
+                root.canSkip = p[2] === "1";
+                // the helper gave up (2 misses, 10 s, or you pressed a key): say so
+                if (p[0] === "password" && (root.state === "listening" || root.state === "miss")) {
+                    root.state = "password";
+                    root.hint = "";
+                    hideLater.interval = 2600;
+                    hideLater.restart();
+                }
+            }
+        }
+    }
+    // while the popup is up, keep an eye on the note (a key-press skip or a
+    // timeout doesn't show up on the bus)
+    Timer {
+        interval: 400
+        repeat: true
+        running: root.state === "listening" || root.state === "miss"
+        onTriggered: root.readNote()
+    }
     // never leave it up if fprintd goes quiet (timeouts don't announce anything)
     Timer { id: safety; interval: 14000; onTriggered: { root.state = "idle"; root.hint = ""; } }
 

@@ -42,6 +42,7 @@ PanelWindow {
         height: 22 + 84 + 14 + fpText.implicitHeight + 32 + offset
         radius: 32
         readonly property bool matched: win.st === "matched"
+        readonly property bool typing: win.st === "password"
         property bool missed: false
         fill: matched ? Theme.pastels.mint : missed ? Theme.pastels.pink : Theme.card
         readonly property color missInk: Qt.darker(Theme.pastels.pink, 1.45)
@@ -57,7 +58,7 @@ PanelWindow {
             anchors.horizontalCenter: parent.horizontalCenter
             y: 22
             width: 84; height: 84
-            readonly property bool scanning: win.want && !card.matched
+            readonly property bool scanning: win.want && !card.matched && !card.typing
 
             Rectangle {
                 anchors.centerIn: parent
@@ -89,7 +90,7 @@ PanelWindow {
             }
             PIcon {
                 anchors.centerIn: parent
-                name: card.matched ? "check" : "fingerprint"
+                name: card.matched ? "check" : card.typing ? "keyboard" : "fingerprint"
                 size: 52
                 color: card.matched || card.missed ? Theme.onPastel : Theme.ink
                 scale: card.matched ? 1.12 : 1
@@ -126,6 +127,7 @@ PanelWindow {
                 font.bold: true
                 color: card.matched || card.missed ? Theme.onPastel : Theme.ink
                 text: card.matched ? "Allowed"
+                    : card.typing ? "Type Your Password"
                     : Fingerprint.swipe ? "Swipe to Allow" : "Touch to Allow"
             }
             PText {
@@ -137,7 +139,14 @@ PanelWindow {
                 elide: Text.ElideNone
                 maximumLineCount: 2
                 color: card.matched || card.missed ? Theme.onPastel : Theme.ink
-                text: card.matched ? "" : (FingerprintWatch.hint || "or type your password")
+                // what you can actually do right now
+                text: card.matched ? ""
+                    : card.typing ? (FingerprintWatch.canSkip ? "in the terminal"
+                                     : FingerprintWatch.source === "polkit-1" ? "in the permission window" : "")
+                    : FingerprintWatch.hint
+                      || (FingerprintWatch.canSkip ? "or press any key in the terminal to type your password"
+                          : FingerprintWatch.source === "polkit-1" ? "your password comes after 10 seconds"
+                          : "")
             }
         }
 

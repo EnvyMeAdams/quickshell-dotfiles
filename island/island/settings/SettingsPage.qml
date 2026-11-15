@@ -359,7 +359,9 @@ Item {
                 readonly property string s: Compositor.scripts.replace(Config.home, "~") + "/fingerprint-pam.sh"
                 text: "Lets doas and app permission prompts (polkit) take your fingerprint. " +
                       "You get 2 swipes; after 10 seconds without a finger, or 2 misses, it asks for " +
-                      "your password as usual. Typing doesn't skip the wait in a terminal.\n\n" +
+                      "your password as usual. In a terminal, press any key to go straight to the " +
+                      "password (what you typed is thrown away, so type it again at the prompt). " +
+                      "Permission windows can't skip: the password comes after 10 seconds.\n\n" +
                       "Turn it on (in a terminal):\n" +
                       "   doas sh " + s + " install\n\n" +
                       "Check:   sh " + s + " status\n" +
@@ -367,7 +369,9 @@ Item {
                       "Test:   doas -L; doas true\n\n" +
                       "What it changes: copies a small helper, root-owned, to " +
                       "/usr/local/libexec/island-fingerprint-auth, and adds one line to /etc/pam.d/doas " +
-                      "and /etc/pam.d/polkit-1 (each backed up once to .island-bak). Your password " +
+                      "and /etc/pam.d/polkit-1 (each backed up once to .island-bak; if polkit's file only " +
+                      "exists in /usr/lib/pam.d, a marked copy is made in /etc/pam.d and removed again " +
+                      "on remove). Your password " +
                       "always still works. It only checks your own account and never runs over SSH.\n\n" +
                       "Before changing PAM files, keep a root shell open in another terminal " +
                       "(doas -s) until you've tested it."
