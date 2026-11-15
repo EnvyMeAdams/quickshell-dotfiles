@@ -6,7 +6,9 @@ import Quickshell.Io
 // Signal through signal-cli, as a linked device of your phone (like Signal
 // Desktop). The island starts `signal-cli daemon --socket` itself and talks
 // JSON-RPC over that socket: messages in, replies/reactions/read receipts out.
-// Messages live in memory only; nothing is written to disk by the island.
+// Chats are saved to ~/.local/share/island/signal-chats.json (folder only you
+// can open) so they survive restarts; turn Keep Chats off to keep them in
+// memory only.
 // Settings › Messages › Signal links the device and shows the steps.
 Singleton {
     id: root
@@ -171,7 +173,67 @@ Singleton {
                                                       msgs: [], unread: 0, last: 0, typing: false }, init);
         return convs[key];
     }
-    function touch() { convs = Object.assign({}, convs); rev++; }
+    function touch() { convs = Object.assign({}, convs); rev++; if (Config.s.signalKeepChats) saveLater.restart(); }
+
+    // ── keeping chats across restarts ──
+    readonly property string chatFile: (Quickshell.env("XDG_DATA_HOME") || (Config.home + "/.local/share")) + "/island/signal-chats.json"
+    property bool restored: false
+    Process {
+        id: prep
+        // a private folder first: only you can read what's inside
+        running: Config.s.signalKeepChats
+        command: ["sh", "-c", "d=$(dirname \"$1\"); mkdir -p \"$d\" && chmod 700 \"$d\"; [ -e \"$1\" ] && chmod 600 \"$1\"; true", "sh", root.chatFile]
+        onExited: store.path = root.chatFile
+    }
+    FileView {
+        id: store
+        path: ""
+        printErrors: false
+        onLoaded: root.restore(text())
+        onLoadFailed: root.restored = true           // nothing saved yet
+    }
+    Timer { id: saveLater; interval: 1500; onTriggered: root.save() }
+    function save() {
+        if (!Config.s.signalKeepChats || store.path === "" || !restored) return;
+        const keep = {};
+        for (const k in convs) {
+            const c = convs[k];
+            keep[k] = { key: c.key, name: c.name, group: c.group, number: c.number, uuid: c.uuid,
+                        msgs: c.msgs.slice(-200), unread: c.unread, last: c.last };
+        }
+        store.setText(JSON.stringify({ v: 1, account: Config.s.signalAccount, convs: keep }));
+    }
+    function restore(text) {
+        try {
+            const d = JSON.parse(text || "{}");
+            // only this account's chats (after linking a different number, start clean)
+            if (d.v === 1 && d.account === Config.s.signalAccount && d.convs) {
+                const merged = {};
+                for (const k in d.convs) merged[k] = Object.assign({ typing: false, msgs: [], unread: 0, last: 0 }, d.convs[k], { typing: false });
+                // anything that arrived before the file loaded wins
+                for (const k in convs) {
+                    if (!merged[k]) { merged[k] = convs[k]; continue; }
+                    const seen = new Set(merged[k].msgs.map(m => m.ts + (m.mine ? "m" : "t")));
+                    for (const m of convs[k].msgs) if (!seen.has(m.ts + (m.mine ? "m" : "t"))) merged[k].msgs.push(m);
+                    merged[k].unread += convs[k].unread;
+                    merged[k].last = Math.max(merged[k].last, convs[k].last);
+                }
+                convs = merged;
+                rev++;
+            }
+        } catch (e) { console.warn("island: couldn't read saved Signal chats:", e); }
+        restored = true;
+    }
+    Process { id: forget; command: ["sh", "-c", "rm -f -- \"$1\"", "sh", root.chatFile] }
+    function clearSaved() {
+        convs = ({});
+        rev++;
+        forget.running = true;
+    }
+    Connections {
+        target: Config.s
+        function onSignalKeepChatsChanged() { if (Config.s.signalKeepChats) { root.restored = true; root.save(); } else forget.running = true; }
+    }
     // a fresh copy of one chat: views bound to it see every change
     // (the stored object stays the same, so QML wouldn't notice otherwise)
     function snapshot(key) {
@@ -335,6 +397,6 @@ Singleton {
         // forget the account here; your phone still lists the device until you remove it there
         Config.s.signalOn = false;
         Config.s.signalAccount = "";
-        convs = ({});
+        clearSaved();
     }
 }

@@ -22,7 +22,7 @@ Item {
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
           opts: ["Visualizer", "Bars", "Camera Light", "Spotify", "Lyrics in Pill", "Canvas", "Heart", "Up Next", "Song Change", "Port"] },
         { label: "Messages", icon: "chat", tint: Theme.pastels.mint, comp: messagesC,
-          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account", "Fluxer", "Fluxer Popups", "Muted Words"] },
+          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Keep Chats", "Clear Saved Chats", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account", "Fluxer", "Fluxer Popups", "Muted Words"] },
         { label: "Tailscale", icon: "hub", tint: Theme.pastels.aqua, comp: tailscaleC,
           opts: ["Hub Tab", "Exit Node Activity", "Exit Node Offline", "Pill Flag", "Taildrop", "Taildrop Folder", "Set Up"] },
         { label: "Sounds", icon: "volume_up", tint: Theme.pastels.mint, comp: soundsC,
@@ -299,6 +299,16 @@ Item {
             SToggle { label: "Start signal-cli"; hint: "Off if you run your own daemon"; key: "signalDaemon" }
             SText { label: "Socket"; hint: "Empty = the island's own"; key: "signalSocket"; placeholder: "$XDG_RUNTIME_DIR/island-signal.sock" }
             SText { label: "signal-cli"; hint: Signal.kind === "flatpak" ? "Using the Flatpak" : "Command or full path (Flatpak is found by itself)"; key: "signalCli"; fieldWidth: 240 }
+            SToggle { label: "Keep Chats"; hint: "Saved privately so they survive restarts; off: memory only"; key: "signalKeepChats" }
+            SRow {
+                label: "Clear Saved Chats"
+                hint: "Empties the list here; your phone keeps everything"
+                PButton {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Clear"
+                    onClicked: Signal.clearSaved()
+                }
+            }
             SToggle { label: "Read Receipts"; hint: "Sent when you open a chat"; key: "msgReceipts" }
             SToggle { label: "Hide Signal Desktop Alerts"; hint: "While the island is connected"; key: "signalHideDesktop" }
             SLink { icon: "qr_code_2"; label: "Link & Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(signalSetupC) }

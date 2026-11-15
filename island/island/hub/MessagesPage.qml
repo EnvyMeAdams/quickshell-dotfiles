@@ -97,7 +97,7 @@ Item {
                 visible: Signal.list.length === 0
                 width: parent.width
                 wrapMode: Text.Wrap
-                text: "New messages show up here. (Older chats stay on your phone.)"
+                text: "New messages show up here and stay after restarts. (Chats from before linking stay on your phone.)"
                 color: Theme.sub
                 font.pixelSize: 12
             }

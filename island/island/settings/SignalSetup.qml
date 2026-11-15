@@ -118,8 +118,9 @@ Column {
               "How it runs: the island starts \"signal-cli daemon --socket\" itself (Settings › Messages › Signal › Start signal-cli), " +
               "so there's no service to set up. Keep it running: Signal unlinks devices that stay offline for weeks.\n\n" +
               "Privacy: signal-cli keeps its keys in " + Signal.dataDir.replace(Config.home, "~") + ", as private as Signal Desktop's folder " +
-              "(your disk encryption covers it). The island keeps messages in memory only, so chats start fresh after a restart; " +
-              "your phone keeps the full history.\n\n" +
+              "(your disk encryption covers it). Chats you get here are saved in ~/.local/share/island/signal-chats.json, " +
+              "in a folder only you can open, so they survive restarts. Turn off Keep Chats to keep them in memory only " +
+              "(that also deletes the file). Older history stays on your phone.\n\n" +
               "If you also use Signal Desktop, turn on Hide Signal Desktop Alerts so messages don't pop up twice.\n\n" +
               "To remove it: Settings › Messages › Signal › Forget Account, then remove \"Island\" under Linked Devices on your phone."
     }
