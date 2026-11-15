@@ -429,6 +429,26 @@ Item {
                     }
                 }
             }
+
+            // while the fingerprint reader rests: why, and how to bring it back
+            PText {
+                id: fpRestHint
+                readonly property string reason: root.session?.fpRest ?? ""
+                readonly property bool show: root.session?.fp === "idle" && Config.s.lockFingerprint
+                                             && Fingerprint.available && (root.session?.password ?? "") === ""
+                                             && root.session?.status !== "checking" && reason !== ""
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: pwCard.width
+                horizontalAlignment: Text.AlignHCenter
+                font.pixelSize: 12
+                text: reason === "busy" ? "Reader didn't start · tap the fingerprint to try again"
+                    : reason === "tries" ? "Too many tries · tap the fingerprint or type your password"
+                    : reason === "typed" ? "Tap the fingerprint to use it instead"
+                    : "Move the mouse to use your fingerprint"
+                opacity: show ? 0.8 : 0
+                visible: opacity > 0
+                Behavior on opacity { NumberAnimation { duration: Theme.dur(220) } }
+            }
         }
 
         // now playing
