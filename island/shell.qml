@@ -29,6 +29,10 @@ ShellRoot {
         model: Quickshell.screens
         FingerprintPopup {}
     }
+    Variants {
+        model: Quickshell.screens
+        ChargingPopup {}
+    }
     Saver {}
 
     // The lock (needs PAM) and idle timers (need a newer Quickshell) are

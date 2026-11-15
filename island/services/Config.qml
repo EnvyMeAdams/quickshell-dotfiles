@@ -163,6 +163,12 @@ Singleton {
 
             // Home
             property string showBattery: "auto"      // auto | on | off
+            property bool chargePopup: true          // middle card when the charger goes in (laptops)
+            property bool chargePopupUnplug: false   // also when it comes out
+            property int chargePopupTime: 3          // seconds on screen
+            property string chargePopupPos: "center" // center | upper
+            property bool chargePopupFill: true      // battery fills up to your level
+            property bool chargePopupGlow: true      // breathing ring + light sweep while charging
             property bool showTray: true
             property bool powerConfirm: true
 

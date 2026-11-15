@@ -219,8 +219,37 @@ Item {
                 key: "showBattery"
                 options: [{ v: "auto", l: "Auto" }, { v: "on", l: "On" }, { v: "off", l: "Off" }]
             }
+            SLink {
+                visible: Battery.present
+                icon: "battery_charging_full"
+                label: "Charging Popup"
+                hint: !Config.s.chargePopup ? "Off"
+                    : Config.s.chargePopupUnplug ? "Plug In & Unplug" : "When Plugged In"
+                tint: Theme.pastels.green
+                onClicked: stack.push(chargeC)
+            }
             SToggle { label: "Tray"; hint: "App icons, top right"; key: "showTray" }
             SToggle { label: "Confirm Power"; hint: "Click twice for Log Out, Reboot, Power"; key: "powerConfirm" }
+        }
+    }
+    Component {
+        id: chargeC
+        SPage {
+            title: "Charging Popup"
+            SToggle { label: "Charging Popup"; hint: "Middle of the screen when you plug in"; key: "chargePopup" }
+            SToggle { label: "Also When Unplugged"; hint: "Shows On Battery"; key: "chargePopupUnplug" }
+            SSlider { label: "Show For"; key: "chargePopupTime"; from: 1; to: 8; step: 1; suffix: "s" }
+            SChoice {
+                label: "Position"
+                key: "chargePopupPos"
+                options: [{ v: "center", l: "Middle" }, { v: "upper", l: "Upper" }]
+            }
+            SToggle { label: "Fill Animation"; hint: "Battery fills up to your level"; key: "chargePopupFill" }
+            SToggle { label: "Glow"; hint: "Ring and shine while charging"; key: "chargePopupGlow" }
+            SRow {
+                label: "Right Now"
+                hint: Battery.percent + "% · " + (Battery.pluggedIn ? (Battery.status || "Plugged In") : "On Battery")
+            }
         }
     }
     Component {
