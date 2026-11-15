@@ -64,7 +64,10 @@ Singleton {
     }
     function screenshotCmd(mode) {
         const auto = "sh '" + scripts + "/screenshot.sh' " + (mode || "region");
-        return pick(Config.s.screenshotCmd, "hyprshot -m region", auto) || auto;
+        // a hyprshot command saved back on Hyprland can't work anywhere else
+        const user = (Config.s.screenshotCmd ?? "").trim();
+        if (user && kind !== "hyprland" && /(^|\/)hyprshot\b/.test(user)) return auto;
+        return pick(user, "hyprshot -m region", auto) || auto;
     }
     // take a screenshot; the screenshot sound plays only if one was saved
     // (screenshot.sh exits 1 when you cancel the selection)
@@ -75,7 +78,15 @@ Singleton {
     }
     Process {
         id: shotProc
-        onExited: code => { if (code === 0) Sounds.play("screenshot"); }
+        stderr: StdioCollector { id: shotErr }
+        onExited: code => {
+            if (code === 0) { Sounds.play("screenshot"); return; }
+            if (code === 1) return;                      // selection cancelled
+            // anything else: say why instead of failing silently
+            const why = shotErr.text.trim().split("\n").slice(-2).join(" ") || ("exit code " + code);
+            console.warn("island: screenshot failed:", why, "| command:", shotProc.command.join(" "));
+            Quickshell.execDetached(["notify-send", "-a", "Island", "Screenshot didn't work", why]);
+        }
     }
     function logoutCmd() {
         const u = (Config.s.logoutCmd ?? "").trim();
