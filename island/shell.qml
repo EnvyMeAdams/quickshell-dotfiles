@@ -11,7 +11,7 @@ ShellRoot {
     id: root
 
     // make sure background services start even before anything is shown
-    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight]
+    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight, FingerprintWatch]
 
     Variants {
         model: Quickshell.screens
@@ -24,6 +24,10 @@ ShellRoot {
     Variants {
         model: Quickshell.screens
         IslandWindow {}
+    }
+    Variants {
+        model: Quickshell.screens
+        FingerprintPopup {}
     }
     Saver {}
 
@@ -60,6 +64,7 @@ ShellRoot {
             try { Brightness.available; } catch (e) { missing.push("Brightness"); }
             try { Fingerprint.available; } catch (e) { missing.push("Fingerprint"); }
             try { Sounds.qtOk; } catch (e) { missing.push("Sounds"); }
+            try { FingerprintWatch.state; } catch (e) { missing.push("Fingerprint Popup"); }
             try { Battery.present; } catch (e) { missing.push("Battery"); }
             try { Awake.saverBlocked; } catch (e) { missing.push("Keep Awake"); }
             try { Recorder.recording; } catch (e) { missing.push("Recording"); }

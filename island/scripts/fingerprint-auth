@@ -1,0 +1,43 @@
+#!/bin/sh
+# Fingerprint step for doas and app permission prompts (polkit), run by
+# pam_exec. Installed root-owned to /usr/local/libexec/island-fingerprint-auth
+# by fingerprint-pam.sh; PAM uses that copy, not this file.
+#
+# Exit 0 = recognised, PAM skips the password. Anything else = PAM asks for
+# your password as usual.
+#   - 2 swipes; gives up after 10 s without a finger
+#   - retries quietly when the sensor fails to open (the VFS5011 resets itself
+#     on every open, and the next open often fails)
+#   - only for your own account, never over SSH, nothing at all without a
+#     reader or an enrolled finger
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+
+user=${PAM_USER:-}
+[ -n "$user" ] && [ "$user" = "$(id -un)" ] || exit 1
+[ -z "${PAM_RHOST:-}" ] || exit 1
+command -v fprintd-verify >/dev/null 2>&1 || exit 1
+fprintd-list "$user" 2>/dev/null | grep -q '#[0-9]' || exit 1
+
+echo "Swipe your finger, or wait for the password prompt"
+misses=0
+opens=0
+while [ "$misses" -lt 2 ]; do
+    out=$(timeout 10 fprintd-verify "$user" 2>&1)
+    case "$out" in
+    *verify-match*)
+        exit 0 ;;
+    *PermissionDenied*|*"Not Authorized"*|*"no fingers"*)
+        exit 1 ;;
+    *"transfer failed"*|*"failed to claim"*|*"No devices"*|*"Open failed"*)
+        opens=$((opens + 1))
+        [ "$opens" -le 3 ] || exit 1
+        sleep 2
+        continue ;;
+    *verify-no-match*)
+        misses=$((misses + 1))
+        [ "$misses" -lt 2 ] && echo "No match, swipe again" ;;
+    *)
+        exit 1 ;;   # 10 s without a finger, or something unexpected
+    esac
+done
+exit 1
