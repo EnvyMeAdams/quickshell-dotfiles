@@ -26,7 +26,7 @@ Item {
         { label: "Display", icon: "brightness_medium", tint: Theme.pastels.butter, comp: displayC,
           opts: ["Brightness", "Night Light", "Warmth", "Brightness Popup", "Desktop Monitors"] },
         { label: "Lock & Saver", icon: "lock", tint: Theme.pastels.lilac, comp: lockC,
-          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock"] },
+          opts: ["Built-in Lock", "Saver After", "Lock After", "Wait for Media", "Wait for Calls", "Wait for Fullscreen", "Apps", "Grace", "Lock Waits for Music", "Keep Awake", "Lock Media", "Saver Clock", "Animation", "Lock Displays", "Saver Displays", "Glass", "Blur", "Tint", "Fallback Lock", "Stuck Lock", "Fingerprint", "Listen For"] },
         { label: "Recording", icon: "screen_record", tint: Theme.pastels.coral, comp: recordC,
           opts: ["Mic", "Desktop Sound", "Mode", "FPS", "Folder"] },
         { label: "Wallpaper", icon: "image", tint: Theme.pastels.sand, comp: wallpaperC,
@@ -255,11 +255,56 @@ Item {
             SToggle { label: "Animation"; key: "lockAnim" }
             SDisplays { label: "Lock Displays"; key: "lockDisplays" }
             SDisplays { label: "Saver Displays"; key: "saverDisplays" }
+            SLink {
+                visible: Fingerprint.reader
+                icon: "fingerprint"
+                label: "Fingerprint"
+                hint: !Config.s.lockFingerprint ? "Off"
+                    : Fingerprint.fingers > 0 ? "On" : "No finger set up"
+                tint: Theme.pastels.mint
+                onClicked: stack.push(fingerprintC)
+            }
             SToggle { label: "Glass"; key: "lockGlass" }
             SSlider { label: "Blur"; key: "glassBlur"; from: 0; to: 1; step: 0.05 }
             SSlider { label: "Tint"; key: "glassTint"; from: 0; to: 1; step: 0.05 }
             SText { label: "Fallback Lock"; key: "lockCmd"; fieldWidth: 300; placeholder: "hyprlock or swaylock" }
             SLink { icon: "help"; label: "Stuck Lock"; tint: Theme.pastels.yellow; onClicked: stack.push(stuckC) }
+        }
+    }
+    Component {
+        id: fingerprintC
+        SPage {
+            title: "Fingerprint"
+            SToggle { label: "Use Fingerprint"; hint: "Unlock the lock screen with a finger"; key: "lockFingerprint" }
+            SSlider { label: "Listen For"; hint: "Then move the mouse or tap the icon"; key: "fpListen"; from: 10; to: 180; step: 5; suffix: "s" }
+            SRow {
+                label: "Reader"
+                hint: (Fingerprint.device || "Found") + " · " +
+                      (Fingerprint.fingers === 1 ? "1 finger" : Fingerprint.fingers + " fingers")
+            }
+            SLink { icon: "help"; label: "How to Set Up"; tint: Theme.pastels.yellow; onClicked: stack.push(fingerprintHelpC) }
+        }
+    }
+    Component {
+        id: fingerprintHelpC
+        SPage {
+            title: "How to Set Up"
+            HelpCard {
+                text: "The lock screen listens for a finger as soon as it appears. Start typing to use " +
+                      "your password instead. Login and doas still use your password.\n\n" +
+                      "Set up a finger (in a terminal):\n" +
+                      "   fprintd-enroll\n" +
+                      "   fprintd-enroll -f left-index-finger   (another finger)\n\n" +
+                      "Test it:   fprintd-verify\n" +
+                      "Start over:   fprintd-delete $USER\n\n" +
+                      (Fingerprint.swipe
+                        ? "Swipe sensor tips: start at the first crease of your finger, pull down " +
+                          "smoothly in about a second, flat and straight. Too fast reads as \"too short\".\n\n" +
+                          "Some swipe sensors only check the first finger in the list (fprintd-list shows it). " +
+                          "If another one works better, delete the ones above it.\n\n"
+                        : "") +
+                      "Needs fprintd (with PAM support). The island hides all of this on machines without a reader."
+            }
         }
     }
     Component {
@@ -497,6 +542,7 @@ Item {
                     ["Visualizer", "cava"],
                     ["Videos", "qt multimedia, ffmpegthumbnailer"],
                     ["Lock", "pam"],
+                    ["Fingerprint", "fprintd (with pam), only on machines with a reader"],
                     ["Web Search", "curl, xdg-utils"],
                     ["Launcher", "wl-clipboard, fd"],
                     ["Camera Light", "psmisc"],

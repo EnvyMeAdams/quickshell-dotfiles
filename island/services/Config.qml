@@ -133,6 +133,8 @@ Singleton {
             property bool saverClock: true
             property bool lockAnim: true
             property bool lockGlass: true
+            property bool lockFingerprint: true     // only matters with a reader + enrolled finger
+            property int fpListen: 60                // seconds the lock listens before it rests
             property real glassBlur: 0.8
             property real glassTint: 0.45
 

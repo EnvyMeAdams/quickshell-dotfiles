@@ -23,6 +23,7 @@ Item {
     readonly property bool saverHere: Wallpaper.onDisplay(Config.s.saverDisplays, screenName)
     readonly property var desk: Wallpaper.current(screenName)
     readonly property Item glass: Config.s.lockGlass ? bg : null
+    readonly property bool fpShown: session?.fpShown ?? false
 
     // lock background: chosen lock photo/video, else this display's desktop photo
     readonly property string bgPath: Config.s.lockBg || (desk?.kind === "photo" ? desk.path : "")
@@ -180,101 +181,252 @@ Item {
                 size: 30; fontSize: 14
             }
 
-            Card {
-                id: pwCard
+            // password field and fingerprint widget share this spot and crossfade
+            Item {
+                id: authBox
                 anchors.horizontalCenter: parent.horizontalCenter
-                glassSource: root.session?.status === "wrong" ? null : root.glass
-                width: 320 + offset
-                height: 52 + offset
-                radius: 26
-                fill: root.session?.status === "wrong" ? Theme.pastels.pink : Theme.card
-                transform: Translate { id: shakeX }
+                width: Math.max(pwCard.width, fpCard.width)
+                height: root.fpShown ? fpCard.height : pwCard.height
+                Behavior on height { NumberAnimation { duration: Theme.dur(240); easing.type: Easing.OutCubic } }
 
-                // hidden input does the typing; dots are drawn separately
-                TextInput {
-                    id: pw
-                    anchors.fill: parent
-                    opacity: 0
-                    focus: !root.saverPhase
-                    echoMode: TextInput.Password
-                    text: root.session?.password ?? ""
-                    onTextChanged: if (root.session && root.session.password !== text) {
-                        root.session.password = text;
-                        if (root.session.status === "wrong") root.session.status = "";
+                Card {
+                    id: pwCard
+                    anchors.centerIn: parent
+                    opacity: root.fpShown ? 0 : 1
+                    visible: opacity > 0
+                    Behavior on opacity { NumberAnimation { duration: Theme.dur(180) } }
+                    glassSource: root.session?.status === "wrong" ? null : root.glass
+                    width: 320 + offset
+                    height: 52 + offset
+                    radius: 26
+                    fill: root.session?.status === "wrong" ? Theme.pastels.pink : Theme.card
+                    transform: Translate { id: shakeX }
+
+                    // hidden input does the typing; dots are drawn separately
+                    TextInput {
+                        id: pw
+                        anchors.fill: parent
+                        opacity: 0
+                        focus: !root.saverPhase
+                        echoMode: TextInput.Password
+                        text: root.session?.password ?? ""
+                        onTextChanged: if (root.session && root.session.password !== text) {
+                            root.session.password = text;
+                            if (root.session.status === "wrong") root.session.status = "";
+                        }
+                        onAccepted: root.session?.submit()
                     }
-                    onAccepted: root.session?.submit()
-                }
 
-                PIcon {
-                    id: lockIcon
-                    anchors.left: parent.left
-                    anchors.leftMargin: 16
-                    anchors.verticalCenter: parent.verticalCenter
-                    name: root.session?.status === "checking" ? "hourglass_top" : "lock"
-                    color: root.session?.status === "wrong" ? Theme.onPastel : Theme.ink
-                }
-
-                Item {
-                    id: dotsBox
-                    anchors.left: lockIcon.right
-                    anchors.leftMargin: 12
-                    anchors.right: go.left
-                    anchors.rightMargin: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    height: 14
-                    clip: true
-                    readonly property int fit: Math.max(1, Math.floor(width / 16))
-
-                    PText {
+                    // lock icon; a fingerprint button while the reader is resting
+                    PIcon {
+                        id: lockIcon
+                        readonly property bool fpButton: root.session?.fp === "idle" && Config.s.lockFingerprint && Fingerprint.available
+                        anchors.left: parent.left
+                        anchors.leftMargin: 16
                         anchors.verticalCenter: parent.verticalCenter
-                        visible: pw.text.length === 0
-                        text: root.session?.status === "wrong" ? "Try Again"
-                            : root.session?.status === "error" ? "Error, Try Again" : "Password"
+                        name: root.session?.status === "checking" ? "hourglass_top" : fpButton ? "fingerprint" : "lock"
                         color: root.session?.status === "wrong" ? Theme.onPastel : Theme.ink
-                        opacity: 0.7
-                    }
-                    Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        spacing: 6
-                        Repeater {
-                            model: Math.min(pw.text.length, dotsBox.fit)
-                            Rectangle {
-                                required property int index
-                                width: 10; height: 10; radius: 5
-                                color: Theme.cycle[index % Theme.cycle.length]
-                                border.width: 1.5
-                                border.color: Theme.line
-                                scale: 0
-                                Component.onCompleted: scale = 1
-                                Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutBack } }
+                        scale: fpTap.containsMouse ? 1.15 : 1
+                        Behavior on scale { NumberAnimation { duration: Theme.dur(120) } }
+                        MouseArea {
+                            id: fpTap
+                            anchors.fill: parent
+                            anchors.margins: -8
+                            enabled: lockIcon.fpButton
+                            hoverEnabled: true
+                            cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            onClicked: {
+                                root.session.password = "";
+                                root.session.status = "";
+                                root.session.startFp();
                             }
                         }
                     }
-                }
 
-                PButton {
-                    id: go
-                    anchors.right: parent.right
-                    anchors.rightMargin: 8
-                    anchors.verticalCenter: parent.verticalCenter
-                    icon: "arrow_forward"
-                    faceHeight: 34
-                    offset: 3
-                    pad: 6
-                    checked: pw.text.length > 0
-                    onClicked: root.session?.submit()
-                }
+                    Item {
+                        id: dotsBox
+                        anchors.left: lockIcon.right
+                        anchors.leftMargin: 12
+                        anchors.right: go.left
+                        anchors.rightMargin: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        height: 14
+                        clip: true
+                        readonly property int fit: Math.max(1, Math.floor(width / 16))
 
-                SequentialAnimation {
-                    id: shake
-                    NumberAnimation { target: shakeX; property: "x"; to: -12; duration: 50 }
-                    NumberAnimation { target: shakeX; property: "x"; to: 10; duration: 60 }
-                    NumberAnimation { target: shakeX; property: "x"; to: -6; duration: 60 }
-                    NumberAnimation { target: shakeX; property: "x"; to: 0; duration: 70 }
+                        PText {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: pw.text.length === 0
+                            text: root.session?.status === "wrong" ? "Try Again"
+                                : root.session?.status === "error" ? "Error, Try Again" : "Password"
+                            color: root.session?.status === "wrong" ? Theme.onPastel : Theme.ink
+                            opacity: 0.7
+                        }
+                        Row {
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 6
+                            Repeater {
+                                model: Math.min(pw.text.length, dotsBox.fit)
+                                Rectangle {
+                                    required property int index
+                                    width: 10; height: 10; radius: 5
+                                    color: Theme.cycle[index % Theme.cycle.length]
+                                    border.width: 1.5
+                                    border.color: Theme.line
+                                    scale: 0
+                                    Component.onCompleted: scale = 1
+                                    Behavior on scale { NumberAnimation { duration: 140; easing.type: Easing.OutBack } }
+                                }
+                            }
+                        }
+                    }
+
+                    PButton {
+                        id: go
+                        anchors.right: parent.right
+                        anchors.rightMargin: 8
+                        anchors.verticalCenter: parent.verticalCenter
+                        icon: "arrow_forward"
+                        faceHeight: 34
+                        offset: 3
+                        pad: 6
+                        checked: pw.text.length > 0
+                        onClicked: root.session?.submit()
+                    }
+
+                    SequentialAnimation {
+                        id: shake
+                        NumberAnimation { target: shakeX; property: "x"; to: -12; duration: 50 }
+                        NumberAnimation { target: shakeX; property: "x"; to: 10; duration: 60 }
+                        NumberAnimation { target: shakeX; property: "x"; to: -6; duration: 60 }
+                        NumberAnimation { target: shakeX; property: "x"; to: 0; duration: 70 }
+                    }
+                    Connections {
+                        target: root.session
+                        function onStatusChanged() { if (root.session.status === "wrong") shake.restart(); }
+                    }
                 }
-                Connections {
-                    target: root.session
-                    function onStatusChanged() { if (root.session.status === "wrong") shake.restart(); }
+                // fingerprint widget: listening, hints, shake on a miss, check on a match
+                Card {
+                    id: fpCard
+                    anchors.centerIn: parent
+                    glassSource: fpCard.missed ? null : root.glass
+                    width: 300 + offset
+                    height: 196 + offset
+                    radius: 32
+                    fill: fpCard.matched ? Theme.pastels.mint : fpCard.missed ? Theme.pastels.pink : Theme.card
+                    readonly property bool matched: root.session?.fp === "matched"
+                    property bool missed: false
+                    opacity: root.fpShown ? 1 : 0
+                    scale: root.fpShown ? 1 : 0.86
+                    visible: opacity > 0
+                    Behavior on opacity { NumberAnimation { duration: Theme.dur(200) } }
+                    Behavior on scale { NumberAnimation { duration: Theme.dur(320); easing.type: Easing.OutBack } }
+                    transform: Translate { id: fpShakeX }
+
+                    Item {
+                        id: sensor
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        y: 22
+                        width: 84; height: 84
+
+                        // soft ring breathing out while it listens
+                        Rectangle {
+                            id: pulse
+                            anchors.centerIn: parent
+                            width: parent.width; height: width; radius: width / 2
+                            color: "transparent"
+                            border.width: 2
+                            border.color: fpCard.matched ? Theme.onPastel : Theme.accent
+                            opacity: 0
+                            SequentialAnimation on scale {
+                                running: root.fpShown && !fpCard.matched && fpCard.visible
+                                loops: Animation.Infinite
+                                NumberAnimation { from: 0.9; to: 1.35; duration: 1400; easing.type: Easing.OutCubic }
+                                PauseAnimation { duration: 200 }
+                            }
+                            SequentialAnimation on opacity {
+                                running: root.fpShown && !fpCard.matched && fpCard.visible
+                                loops: Animation.Infinite
+                                NumberAnimation { from: 0.8; to: 0; duration: 1400; easing.type: Easing.OutCubic }
+                                PauseAnimation { duration: 200 }
+                            }
+                        }
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: width / 2
+                            color: fpCard.matched ? Qt.rgba(1, 1, 1, 0.5) : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.35)
+                            border.width: Theme.outline
+                            border.color: Theme.line
+                            Behavior on color { ColorAnimation { duration: Theme.dur(200) } }
+                        }
+                        PIcon {
+                            id: fpIcon
+                            anchors.centerIn: parent
+                            name: fpCard.matched ? "check" : "fingerprint"
+                            size: 52
+                            color: fpCard.matched || fpCard.missed ? Theme.onPastel : Theme.ink
+                            scale: fpCard.matched ? 1.12 : 1
+                            Behavior on scale { NumberAnimation { duration: Theme.dur(260); easing.type: Easing.OutBack } }
+                        }
+                        // scan line sweeping over the print, the way a swipe reads it
+                        Item {
+                            anchors.fill: parent
+                            clip: true
+                            visible: root.fpShown && !fpCard.matched
+                            Rectangle {
+                                id: scanLine
+                                x: 14; width: parent.width - 28; height: 3; radius: 1.5
+                                color: Theme.accent
+                                opacity: 0.9
+                                SequentialAnimation on y {
+                                    running: root.fpShown && !fpCard.matched && fpCard.visible
+                                    loops: Animation.Infinite
+                                    NumberAnimation { from: 14; to: 68; duration: 1100; easing.type: Easing.InOutSine }
+                                    NumberAnimation { from: 68; to: 14; duration: 1100; easing.type: Easing.InOutSine }
+                                }
+                            }
+                        }
+                    }
+
+                    Column {
+                        anchors.top: sensor.bottom
+                        anchors.topMargin: 14
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        width: parent.width - 32
+                        spacing: 4
+                        PText {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            font.bold: true
+                            color: fpCard.matched || fpCard.missed ? Theme.onPastel : Theme.ink
+                            text: fpCard.matched ? "Unlocking"
+                                : Fingerprint.swipe ? "Swipe Your Finger" : "Touch the Sensor"
+                        }
+                        PText {
+                            width: parent.width
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pixelSize: 12
+                            opacity: 0.75
+                            color: fpCard.matched || fpCard.missed ? Theme.onPastel : Theme.ink
+                            text: fpCard.matched ? "" : (root.session?.fpHint || "or start typing your password")
+                        }
+                    }
+
+                    SequentialAnimation {
+                        id: fpShake
+                        ScriptAction { script: fpCard.missed = true }
+                        NumberAnimation { target: fpShakeX; property: "x"; to: -12; duration: 50 }
+                        NumberAnimation { target: fpShakeX; property: "x"; to: 10; duration: 60 }
+                        NumberAnimation { target: fpShakeX; property: "x"; to: -6; duration: 60 }
+                        NumberAnimation { target: fpShakeX; property: "x"; to: 0; duration: 70 }
+                        PauseAnimation { duration: 500 }
+                        ScriptAction { script: fpCard.missed = false }
+                    }
+                    Connections {
+                        target: root.session
+                        function onFpMiss() { fpShake.restart(); }
+                    }
                 }
             }
         }
@@ -333,11 +485,14 @@ Item {
         }
     }
 
-    // clicks on empty space focus the password box
+    // clicks on empty space focus the password box; moving the mouse wakes
+    // a resting fingerprint reader (not after too many tries)
     MouseArea {
         anchors.fill: parent
         z: 2
-        onClicked: pw.forceActiveFocus()
+        hoverEnabled: !root.saverPhase
+        onClicked: { pw.forceActiveFocus(); root.session?.fpWake(); }
+        onPositionChanged: root.session?.fpWake()
     }
 
     // any click or key ends the screensaver part
