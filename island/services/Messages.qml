@@ -17,7 +17,7 @@ Singleton {
     // popup
     property string popKey: ""
     property int popCount: 0                // messages since the popup appeared (bursts collapse)
-    readonly property var popConv: popKey ? (Signal.convs[popKey] ?? null) : null
+    readonly property var popConv: popKey ? Signal.snapshot(popKey) : null
 
     function openChat(key, reply) {
         source = "signal";

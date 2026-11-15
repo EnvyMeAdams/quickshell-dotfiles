@@ -9,7 +9,7 @@ import qs.island.settings
 Item {
     id: root
 
-    readonly property var c: Messages.open ? (Signal.convs[Messages.open] ?? null) : null
+    readonly property var c: Messages.open ? Signal.snapshot(Messages.open) : null
     property bool helpOpen: false
     property real picked: -1                 // timestamp of the bubble showing reactions
 
@@ -231,6 +231,8 @@ Item {
                 spacing: 6
                 boundsBehavior: Flickable.StopAtBounds
                 model: root.c?.msgs ?? []
+                // new or changed messages: stay at the newest
+                onModelChanged: Qt.callLater(positionViewAtEnd)
                 onCountChanged: Qt.callLater(positionViewAtEnd)
                 Component.onCompleted: positionViewAtEnd()
 

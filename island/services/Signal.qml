@@ -29,6 +29,7 @@ Singleton {
     property bool connected: sock.connected
     property string status: ""              // last thing worth telling you (errors, "Connected")
     property var convs: ({})                // key -> conversation
+    property int rev: 0                     // bumps on every change, so views redraw
     readonly property var list: Object.values(convs).sort((a, b) => b.last - a.last)
     readonly property int unread: list.reduce((n, c) => n + c.unread, 0)
     property var contacts: ({})             // number/uuid -> name
@@ -170,7 +171,14 @@ Singleton {
                                                       msgs: [], unread: 0, last: 0, typing: false }, init);
         return convs[key];
     }
-    function touch() { convs = Object.assign({}, convs); }
+    function touch() { convs = Object.assign({}, convs); rev++; }
+    // a fresh copy of one chat: views bound to it see every change
+    // (the stored object stays the same, so QML wouldn't notice otherwise)
+    function snapshot(key) {
+        void rev;
+        const c = convs[key];
+        return c ? Object.assign({}, c, { msgs: c.msgs.slice() }) : null;
+    }
     function push(c, msg) {
         c.msgs = c.msgs.concat([msg]).slice(-200);
         c.last = Math.max(c.last, msg.ts);
