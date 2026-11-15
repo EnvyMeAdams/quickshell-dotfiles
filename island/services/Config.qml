@@ -135,6 +135,7 @@ Singleton {
             property bool lockGlass: true
             property bool lockFingerprint: true     // only matters with a reader + enrolled finger
             property int fpListen: 60                // seconds the lock listens before it rests
+            property int fpHintFor: 6                // seconds the resting hint stays (0 = always)
             property real glassBlur: 0.8
             property real glassTint: 0.45
 
