@@ -9,7 +9,7 @@ import qs.island.settings
 Item {
     id: root
 
-    readonly property var c: Messages.open ? Signal.snapshot(Messages.open) : null
+    readonly property var c: Messages.open ? Signal.snapshot(Messages.open, Signal.rev) : null
     property bool helpOpen: false
     property real picked: -1                 // timestamp of the bubble showing reactions
 
@@ -243,7 +243,7 @@ Item {
                     readonly property bool showPick: root.picked === modelData.ts
                     readonly property var reacts: Object.values(modelData.reactions ?? {})
                     width: bubbles.width
-                    height: bub.height + (reacts.length ? 14 : 0) + (showPick ? 36 : 0) + (root.c?.group && !mine ? 14 : 0)
+                    height: bub.height + (reacts.length || modelData.failed ? 14 : 0) + (showPick ? 36 : 0) + (root.c?.group && !mine ? 14 : 0)
 
                     PText {
                         id: who
@@ -260,7 +260,9 @@ Item {
                         height: txt.implicitHeight + 16
                         x: b.mine ? bubbles.width - width - 4 : 4
                         radius: 14
-                        color: b.mine ? "#3a76f0" : Theme.card
+                        color: b.mine ? (b.modelData.failed ? Theme.danger : "#3a76f0") : Theme.card
+                        opacity: b.modelData.pending ? 0.55 : 1
+                        Behavior on opacity { NumberAnimation { duration: Theme.dur(200) } }
                         border.width: b.mine ? 0 : Math.max(1, Theme.outline - 0.5)
                         border.color: Theme.line
                         PText {
@@ -278,6 +280,16 @@ Item {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.picked = b.showPick ? -1 : b.modelData.ts
                         }
+                    }
+                    // couldn't send: say so under the bubble
+                    PText {
+                        visible: !!b.modelData.failed
+                        anchors.top: bub.bottom
+                        anchors.topMargin: 2
+                        x: bub.x + bub.width - width - 4
+                        text: "Not sent"
+                        font.pixelSize: 10
+                        color: Theme.danger
                     }
                     // reactions under the bubble
                     Text {

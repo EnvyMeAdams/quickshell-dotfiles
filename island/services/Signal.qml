@@ -102,10 +102,12 @@ Singleton {
     // ── JSON-RPC ──
     property int nextId: 1
     property var pending: ({})
-    function call(method, params, done) {
+    property var failing: ({})
+    function call(method, params, done, fail) {
         if (!sock.connected) { status = "Not connected"; return false; }
         const id = nextId++;
         if (done) pending[id] = done;
+        if (fail) failing[id] = fail;
         // single-account daemon (started with -a), so no "account" in params
         sock.write(JSON.stringify({ jsonrpc: "2.0", method: method, params: params, id: id }) + "\n");
         sock.flush();
@@ -115,9 +117,10 @@ Singleton {
         let m;
         try { m = JSON.parse(line); } catch (e) { return; }
         if (m.id !== undefined && m.id !== null) {
-            const done = pending[m.id];
+            const done = pending[m.id], fail = failing[m.id];
             delete pending[m.id];
-            if (m.error) status = m.error.message ?? "signal-cli error";
+            delete failing[m.id];
+            if (m.error) { status = m.error.message ?? "signal-cli error"; if (fail) fail(m.error); }
             else if (done) done(m.result);
             return;
         }
@@ -236,8 +239,8 @@ Singleton {
     }
     // a fresh copy of one chat: views bound to it see every change
     // (the stored object stays the same, so QML wouldn't notice otherwise)
-    function snapshot(key) {
-        void rev;
+    // call as snapshot(key, Signal.rev): passing rev makes the binding depend on it
+    function snapshot(key, r) {
         const c = convs[key];
         return c ? Object.assign({}, c, { msgs: c.msgs.slice() }) : null;
     }
@@ -323,12 +326,16 @@ Singleton {
         const c = convs[key];
         text = (text ?? "").trim();
         if (!c || !text) return;
-        const ok = call("send", Object.assign({ message: text }, target(c)), r => {
-            const ts = r?.timestamp ?? Date.now();
-            push(c, { ts: ts, from: "me", fromName: "You", mine: true, text: text, attachments: 0, reactions: {} });
-            touch();
-        });
-        if (ok) markRead(key);
+        // shows up right away (faded) and settles when signal-cli confirms
+        const msg = { ts: Date.now(), from: "me", fromName: "You", mine: true, text: text,
+                      attachments: 0, reactions: {}, pending: true, failed: false };
+        push(c, msg);
+        touch();
+        const ok = call("send", Object.assign({ message: text }, target(c)),
+            r => { msg.ts = r?.timestamp ?? msg.ts; msg.pending = false; touch(); },
+            () => { msg.pending = false; msg.failed = true; touch(); });
+        if (!ok) { msg.pending = false; msg.failed = true; touch(); }
+        else markRead(key);
     }
     function react(key, msg, emoji) {
         const c = convs[key];
