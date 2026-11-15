@@ -108,7 +108,7 @@ Item {
         PrivacyDot { on: Privacy.mic; dotColor: Theme.mic }
         PrivacyDot { on: Privacy.camera; dotColor: Theme.camera }
 
-        // unread chats (Signal + Fluxer)
+        // unread Signal chats
         Row {
             visible: Messages.unread > 0
             spacing: 2

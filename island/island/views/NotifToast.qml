@@ -7,7 +7,6 @@ Item {
     id: root
 
     readonly property var n: Notifs.latest
-    readonly property bool fluxer: Config.s.fluxerStyle && Notifs.isFluxer(n)
 
     Avatar {
         id: av
@@ -17,8 +16,8 @@ Item {
         width: 56
         height: 56
         source: Notifs.imageFor(root.n)
-        letter: root.fluxer ? (root.n?.summary ?? "F") : (root.n?.appName ?? "?")
-        fill: root.fluxer ? Theme.pastels.lavender : Theme.pastels.rose
+        letter: root.n?.appName ?? "?"
+        fill: Theme.pastels.rose
     }
 
     Column {
@@ -29,22 +28,11 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 2
 
-        Row {
-            spacing: 5
-            Chip {
-                visible: root.fluxer
-                text: "Fluxer"
-                size: 16
-                fontSize: 9
-                fill: Theme.pastels.lavender
-                anchors.verticalCenter: parent.verticalCenter
-            }
-            PText {
-                visible: !root.fluxer
-                text: root.n?.appName ?? ""
-                color: Theme.sub
-                font.pixelSize: 11
-            }
+        PText {
+            width: parent.width
+            text: root.n?.appName ?? ""
+            color: Theme.sub
+            font.pixelSize: 11
         }
         PText {
             width: parent.width

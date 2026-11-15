@@ -5,7 +5,6 @@ import qs.components
 import qs.island.settings
 
 // Hub › Messages: Signal chats on the left, the open chat on the right.
-// Fluxer alerts get their own switch at the top when there are any.
 Item {
     id: root
 
@@ -29,26 +28,16 @@ Item {
                 icon: "chat"
                 faceHeight: 30
                 offset: 3
-                checked: Messages.source === "signal"
+                checked: true
                 tint: Theme.pastels.mint
-                onClicked: Messages.source = "signal"
-            }
-            PButton {
-                visible: Config.s.fluxerStyle && Notifs.fluxerCount > 0
-                text: "Fluxer " + Notifs.fluxerCount
-                icon: "forum"
-                faceHeight: 30
-                offset: 3
-                checked: Messages.source === "fluxer"
-                tint: Theme.pastels.lavender
-                onClicked: Messages.source = "fluxer"
+                onClicked: Messages.open = ""
             }
         }
 
         // Signal not ready: one card that says why, with the steps behind a button
         Card {
             id: stCard
-            visible: Messages.source === "signal" && !Signal.connected
+            visible: !Signal.connected
             anchors.top: sources.bottom
             anchors.topMargin: 12
             width: parent.width
@@ -85,7 +74,7 @@ Item {
         }
 
         PScroll {
-            visible: Messages.source === "signal" && Signal.connected
+            visible: Signal.connected
             anchors.top: sources.bottom
             anchors.topMargin: 12
             anchors.left: parent.left
@@ -158,31 +147,12 @@ Item {
                 }
             }
         }
-
-        // Fluxer: its alerts, newest first; the buttons are the app's own actions
-        PScroll {
-            visible: Messages.source === "fluxer"
-            anchors.top: sources.bottom
-            anchors.topMargin: 12
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            spacing: 8
-            Repeater {
-                model: Messages.source === "fluxer" ? Notifs.fluxerList : []
-                delegate: NotifCard {
-                    required property var modelData
-                    width: parent ? parent.width : 0
-                    n: modelData
-                }
-            }
-        }
     }
 
     // ── right: the open chat ──
     Card {
         id: thread
-        visible: !root.helpOpen && Messages.source === "signal"
+        visible: !root.helpOpen
         anchors.left: left.right
         anchors.leftMargin: 14
         anchors.right: parent.right

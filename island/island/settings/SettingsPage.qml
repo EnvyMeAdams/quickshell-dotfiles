@@ -22,7 +22,7 @@ Item {
         { label: "Media", icon: "music_note", tint: Theme.pastels.blue, comp: mediaC,
           opts: ["Visualizer", "Bars", "Camera Light", "Spotify", "Lyrics in Pill", "Canvas", "Heart", "Up Next", "Song Change", "Port"] },
         { label: "Messages", icon: "chat", tint: Theme.pastels.mint, comp: messagesC,
-          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Keep Chats", "Clear Saved Chats", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account", "Fluxer", "Fluxer Popups", "Muted Words"] },
+          opts: ["Signal", "Link This Computer", "Start signal-cli", "Popups", "Previews", "Lock Screen Previews", "Keep Chats", "Clear Saved Chats", "Read Receipts", "Typing", "Focus Allows", "Reactions", "Hide Signal Desktop Alerts", "Forget Account"] },
         { label: "Tailscale", icon: "hub", tint: Theme.pastels.aqua, comp: tailscaleC,
           opts: ["Hub Tab", "Exit Node Activity", "Exit Node Offline", "Pill Flag", "Taildrop", "Taildrop Folder", "Set Up"] },
         { label: "Sounds", icon: "volume_up", tint: Theme.pastels.mint, comp: soundsC,
@@ -282,13 +282,6 @@ Item {
             SToggle { label: "Typing"; hint: "Show when someone is typing"; key: "msgTyping" }
             SWords { label: "Focus Allows"; hint: "Names that still pop up during Focus"; key: "msgAllow"; placeholder: "Mom, Alex" }
             SText { label: "Reactions"; hint: "Up to five, separated by spaces"; key: "msgReactions"; fieldWidth: 200 }
-            SLink {
-                icon: "forum"
-                label: "Fluxer"
-                hint: !Config.s.fluxerStyle ? "Off" : Notifs.fluxerCount + " in Alerts"
-                tint: Theme.pastels.lavender
-                onClicked: stack.push(fluxerC)
-            }
         }
     }
     Component {
@@ -331,32 +324,6 @@ Item {
         SPage {
             title: "Link Signal"
             SignalSetup { width: parent.width }
-        }
-    }
-    Component {
-        id: fluxerC
-        SPage {
-            title: "Fluxer"
-            SToggle { label: "Fluxer"; hint: "Own look for Fluxer alerts + a Messages tab"; key: "fluxerStyle" }
-            SToggle { label: "Fluxer Popups"; key: "fluxerPopups" }
-            SWords { label: "Muted Words"; hint: "Alerts containing any stay silent (servers, channels)"; key: "fluxerMuted"; placeholder: "#memes, Big Server" }
-            SLink { icon: "help"; label: "How It Works"; tint: Theme.pastels.yellow; onClicked: stack.push(fluxerHelpC) }
-        }
-    }
-    Component {
-        id: fluxerHelpC
-        SPage {
-            title: "Fluxer"
-            HelpCard {
-                text: "The island reads the alerts the Fluxer desktop app already sends, so there's no token or login to set up, " +
-                      "and nothing extra talks to Fluxer's servers.\n\n" +
-                      "Fluxer alerts get a lilac Fluxer badge, count in the pill's chat bubble, and appear under Messages › Fluxer. " +
-                      "Clicking one in the pill jumps into the app.\n\n" +
-                      "Muted Words: alerts containing any of them are kept in Alerts but don't pop up or make a sound, " +
-                      "e.g. a busy server's name or #channel.\n\n" +
-                      "Limits: the Fluxer app has to be running, and replies happen in the app. " +
-                      "Note that Fluxer isn't end-to-end encrypted, so keep private chats on Signal."
-            }
         }
     }
     Component {
@@ -859,8 +826,7 @@ Item {
                     ["Laptop", "brightnessctl, bluez"],
                     ["Tailscale", "tailscale (net-vpn/tailscale), operator set once"],
                     ["Signal", "signal-cli (Flatpak org.asamk.SignalCli or system), qrencode"],
-                    ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"],
-                    ["Fluxer", "the Fluxer desktop app"]
+                    ["Spotify", "spicetify, qt websockets (dev-qt/qtwebsockets)"]
                 ]
                 delegate: SRow {
                     required property var modelData
