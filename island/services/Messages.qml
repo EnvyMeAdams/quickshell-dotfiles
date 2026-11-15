@@ -7,8 +7,8 @@ import Quickshell
 Singleton {
     id: root
 
-    readonly property bool available: Signal.enabled || (Config.s.fluxerStyle && Notifs.fluxerCount > 0)
-    readonly property int unread: (Signal.enabled ? Signal.unread : 0) + (Config.s.fluxerStyle ? Notifs.fluxerCount : 0)
+    readonly property bool available: Signal.on || (Config.s.fluxerStyle && Notifs.fluxerCount > 0)
+    readonly property int unread: (Signal.on ? Signal.unread : 0) + (Config.s.fluxerStyle ? Notifs.fluxerCount : 0)
 
     property string open: ""                // open Signal chat key ("" = list)
     property string source: "signal"        // signal | fluxer

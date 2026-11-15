@@ -11,7 +11,7 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property bool enabled: Config.s.signalOn && Config.s.signalAccount !== ""
+    readonly property bool on: Config.s.signalOn && Config.s.signalAccount !== ""
     // signal-cli can be a normal install or the Flathub one (org.asamk.SignalCli);
     // the island finds whichever is there. Flatpak is sandboxed, so its socket
     // lives in the one runtime folder both sides can see, and its keys live
@@ -50,7 +50,7 @@ Singleton {
     }
 
     // ── the daemon (unless you run your own) ──
-    property bool daemonWanted: enabled && installed && Config.s.signalDaemon && !linking
+    property bool daemonWanted: on && installed && Config.s.signalDaemon && !linking
     Process {
         id: daemon
         running: root.daemonWanted
@@ -93,7 +93,7 @@ Singleton {
         id: reconnect
         interval: 2000
         repeat: true
-        running: root.enabled && !sock.connected
+        running: root.on && !sock.connected
         onTriggered: sock.connected = true
     }
 

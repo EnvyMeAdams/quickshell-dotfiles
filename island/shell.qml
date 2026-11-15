@@ -73,7 +73,7 @@ ShellRoot {
             try { Awake.saverBlocked; } catch (e) { missing.push("Keep Awake"); }
             try { Recorder.recording; } catch (e) { missing.push("Recording"); }
             try { Tailscale.installed; } catch (e) { missing.push("Tailscale"); }
-            try { Signal.enabled; } catch (e) { missing.push("Signal"); }
+            try { Signal.on; } catch (e) { missing.push("Signal"); }
             try { Messages.unread; } catch (e) { missing.push("Messages"); }
             try { Spotify.on; } catch (e) { missing.push("Spotify"); }
             if (missing.length > 0) {
