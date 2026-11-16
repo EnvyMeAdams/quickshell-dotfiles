@@ -60,7 +60,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         z: 1
-        color: Theme.shade
+        color: Theme.glass ? "black" : Theme.shade
         opacity: root.saverPhase || !root.primary ? 0 : 0.12
     }
 
@@ -195,7 +195,7 @@ Item {
                     opacity: root.fpShown ? 0 : 1
                     visible: opacity > 0
                     Behavior on opacity { NumberAnimation { duration: Theme.dur(180) } }
-                    glassSource: root.session?.status === "wrong" ? null : root.glass
+                    glassSource: root.session?.status === "wrong" && !Theme.glass ? null : root.glass
                     width: 320 + offset
                     height: 52 + offset
                     radius: 26
@@ -270,8 +270,8 @@ Item {
                                 Rectangle {
                                     required property int index
                                     width: 10; height: 10; radius: 5
-                                    color: Theme.cycle[index % Theme.cycle.length]
-                                    border.width: 1.5
+                                    color: Theme.strong(Theme.cycle[index % Theme.cycle.length])
+                                    border.width: Theme.glass ? 0 : 1.5
                                     border.color: Theme.line
                                     scale: 0
                                     Component.onCompleted: scale = 1
@@ -310,13 +310,13 @@ Item {
                 Card {
                     id: fpCard
                     anchors.centerIn: parent
-                    glassSource: fpCard.missed ? null : root.glass
+                    glassSource: fpCard.missed && !Theme.glass ? null : root.glass
                     width: 300 + offset
                     // grows with its text, so a two-line hint never sits on the edge
                     height: 22 + 84 + 14 + fpText.implicitHeight + 32 + offset
                     Behavior on height { NumberAnimation { duration: Theme.dur(200); easing.type: Easing.OutCubic } }
                     // a missed swipe flashes the ring and scan line a deeper rose
-                    readonly property color missInk: Qt.darker(Theme.pastels.pink, 1.45)
+                    readonly property color missInk: Theme.glass ? Theme.strong(Theme.pastels.pink) : Qt.darker(Theme.pastels.pink, 1.45)
                     radius: 32
                     fill: fpCard.matched ? Theme.pastels.mint : fpCard.missed ? Theme.pastels.pink : Theme.card
                     readonly property bool matched: root.session?.fp === "matched"
@@ -341,7 +341,7 @@ Item {
                             width: parent.width; height: width; radius: width / 2
                             color: "transparent"
                             border.width: 2
-                            border.color: fpCard.matched ? Theme.onPastel : fpCard.missed ? fpCard.missInk : Theme.accent
+                            border.color: fpCard.matched ? Theme.onPastel : fpCard.missed ? fpCard.missInk : Theme.strong(Theme.accent)
                             opacity: 0
                             SequentialAnimation on scale {
                                 running: root.fpShown && !fpCard.matched && fpCard.visible
@@ -381,7 +381,7 @@ Item {
                             Rectangle {
                                 id: scanLine
                                 x: 14; width: parent.width - 28; height: fpCard.missed ? 4 : 3; radius: height / 2
-                                color: fpCard.missed ? fpCard.missInk : Theme.accent
+                                color: fpCard.missed ? fpCard.missInk : Theme.strong(Theme.accent)
                                 Behavior on color { ColorAnimation { duration: Theme.dur(120) } }
                                 opacity: 0.9
                                 SequentialAnimation on y {

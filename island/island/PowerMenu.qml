@@ -107,7 +107,9 @@ PanelWindow {
         id: tray
         anchors.centerIn: parent
         radius: 40
-        fill: Qt.rgba(Theme.card.r, Theme.card.g, Theme.card.b, 0.88)
+        fill: Theme.glass ? Theme.panel : Qt.rgba(Theme.card.r, Theme.card.g, Theme.card.b, 0.88)
+        frost: true
+        frostScreen: win.modelData.name
         width: (win.vertical ? col.implicitWidth : row.implicitWidth) + 48 + offset
         height: (win.vertical ? col.implicitHeight : row.implicitHeight) + 48 + offset
         opacity: win.mine ? 1 : 0
@@ -172,6 +174,7 @@ PanelWindow {
             height: 84 + offset
             radius: 42
             fill: rb.sure ? rb.tint : rb.sel ? Theme.hover : Theme.card
+            borderColor: rb.sure ? Theme.edge(rb.tint) : Theme.line
             scale: rb.sel ? 1.08 : 1
             Behavior on scale { NumberAnimation { duration: Theme.dur(160); easing.type: Easing.OutBack } }
             Rectangle {
@@ -182,7 +185,7 @@ PanelWindow {
                 width: 52; height: 52; radius: 26
                 color: rb.tint
                 border.width: Theme.outline
-                border.color: Theme.line
+                border.color: Theme.edge(rb.tint)
                 PIcon { anchors.centerIn: parent; name: rb.sure ? "check" : rb.modelData.icon; size: 26; color: Theme.onPastel }
             }
         }
@@ -214,6 +217,7 @@ PanelWindow {
         height: 70 + offset
         radius: 24
         fill: sure ? tint : sel ? Theme.hover : Theme.card
+        borderColor: sure ? Theme.edge(tint) : Theme.line
         opacity: Math.min(1, win.popT * (win.items.length + 2) - index)
         transform: Translate { x: 30 * (1 - Math.max(0, Math.min(1, win.popT * (win.items.length + 2) - wb.index))) }
 
@@ -225,7 +229,7 @@ PanelWindow {
             width: 42; height: 42; radius: 21
             color: wb.tint
             border.width: Theme.outline
-            border.color: Theme.line
+            border.color: Theme.edge(wb.tint)
             PIcon { anchors.centerIn: parent; name: wb.sure ? "check" : wb.modelData.icon; size: 21; color: Theme.onPastel }
         }
         PText {

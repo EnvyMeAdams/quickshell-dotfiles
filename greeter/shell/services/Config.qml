@@ -37,6 +37,9 @@ Singleton {
             property var desktopPhotos: ({})       // { "DP-1": "/etc/.../files/x.jpg" } for the photo fallback
 
             // copied from the island (same names, same meaning)
+            property string look: "smoke"         // smoke | clear | classic
+            property bool frost: true
+            property real frostBlur: 0.7
             property string surface: "cream"
             property string accent: "peach"
             property int outline: 2

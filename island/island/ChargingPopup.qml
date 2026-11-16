@@ -70,6 +70,12 @@ PanelWindow {
         width: 260 + offset
         height: 236 + offset
         radius: 36
+        fill: Theme.panel
+        frost: true
+        frostScreen: win.modelData.name
+        // the window is centred, or anchored to the top with a margin
+        frostOrigin: Qt.point(((win.modelData.width || 1920) - win.width) / 2,
+                              win.upper ? win.margins.top : ((win.modelData.height || 1080) - win.height) / 2)
         opacity: win.showing ? 1 : 0
         scale: win.showing ? 1 : 0.82
         Behavior on opacity { NumberAnimation { duration: Theme.dur(220) } }
@@ -84,7 +90,7 @@ PanelWindow {
             radius: height / 2
             color: "transparent"
             border.width: 2
-            border.color: win.tint
+            border.color: Theme.strong(win.tint)
             opacity: 0
             readonly property bool run: win.showing && !win.unplug && !win.limited && Config.s.chargePopupGlow
             SequentialAnimation on scale {
@@ -114,8 +120,8 @@ PanelWindow {
                 anchors.fill: parent
                 radius: 20
                 color: Qt.rgba(Theme.ink.r, Theme.ink.g, Theme.ink.b, 0.06)
-                border.width: Theme.outline + 1
-                border.color: Theme.line
+                border.width: Theme.glass ? 2 : Theme.outline + 1
+                border.color: Theme.stroke
 
                 Item {
                     id: fill
@@ -129,7 +135,7 @@ PanelWindow {
                     Rectangle {
                         anchors.fill: parent
                         radius: body.radius - body.border.width - 4
-                        color: win.tint
+                        color: Theme.strong(win.tint)
                         Behavior on color { ColorAnimation { duration: Theme.dur(200) } }
                     }
                     // light sweeping across the fill while it charges
@@ -159,14 +165,14 @@ PanelWindow {
                 anchors.leftMargin: 3
                 anchors.verticalCenter: body.verticalCenter
                 width: 7; height: 24; radius: 3
-                color: Theme.line
+                color: Theme.stroke
             }
             PIcon {
                 id: bolt
                 anchors.centerIn: body
                 name: win.unplug ? "power_off" : win.limited ? "power" : "bolt"
                 size: 44
-                color: Theme.onPastel
+                color: Theme.onStrong
                 scale: 0
                 transform: Translate { id: boltY }
             }

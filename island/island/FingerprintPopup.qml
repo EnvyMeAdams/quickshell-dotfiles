@@ -44,14 +44,27 @@ PanelWindow {
         readonly property bool matched: win.st === "matched"
         readonly property bool typing: win.st === "password"
         property bool missed: false
-        fill: matched ? Theme.pastels.mint : missed ? Theme.pastels.pink : Theme.card
-        readonly property color missInk: Qt.darker(Theme.pastels.pink, 1.45)
+        fill: Theme.glass ? Theme.panel : matched ? Theme.pastels.mint : missed ? Theme.pastels.pink : Theme.card
+        readonly property color missInk: Theme.glass ? Theme.strong(Theme.pastels.pink) : Qt.darker(Theme.pastels.pink, 1.45)
+        frost: true
+        frostScreen: win.modelData.name
+        frostOrigin: Qt.point(((win.modelData.width || 1920) - win.width) / 2,
+                              win.upper ? win.margins.top : ((win.modelData.height || 1080) - win.height) / 2)
         opacity: win.want ? 1 : 0
         scale: win.want ? 1 : 0.86
         Behavior on opacity { NumberAnimation { duration: Theme.dur(200) } }
         Behavior on scale { NumberAnimation { duration: Theme.dur(320); easing.type: Easing.OutBack } }
         Behavior on height { NumberAnimation { duration: Theme.dur(200); easing.type: Easing.OutCubic } }
         transform: Translate { id: shakeX }
+
+        // glass: the result washes over the dark glass instead of replacing it
+        Rectangle {
+            anchors.fill: parent
+            visible: Theme.glass
+            radius: card.radius
+            color: card.matched ? Theme.pastels.mint : card.missed ? Theme.pastels.pink : "transparent"
+            Behavior on color { ColorAnimation { duration: Theme.dur(200) } }
+        }
 
         // who's asking (from the helper's note)
         Chip {
@@ -79,7 +92,7 @@ PanelWindow {
                 width: parent.width; height: width; radius: width / 2
                 color: "transparent"
                 border.width: 2
-                border.color: card.matched ? Theme.onPastel : card.missed ? card.missInk : Theme.accent
+                border.color: card.matched ? Theme.onPastel : card.missed ? card.missInk : Theme.strong(Theme.accent)
                 opacity: 0
                 SequentialAnimation on scale {
                     running: sensor.scanning
@@ -116,7 +129,7 @@ PanelWindow {
                 visible: sensor.scanning
                 Rectangle {
                     x: 14; width: parent.width - 28; height: card.missed ? 4 : 3; radius: height / 2
-                    color: card.missed ? card.missInk : Theme.accent
+                    color: card.missed ? card.missInk : Theme.strong(Theme.accent)
                     Behavior on color { ColorAnimation { duration: Theme.dur(120) } }
                     SequentialAnimation on y {
                         running: sensor.scanning

@@ -57,7 +57,10 @@ Singleton {
 
             // Appearance
             property bool darkMode: false            // old setting, replaced by surface
-            property string surface: "cream"         // cream | fog | slate | cocoa
+            property string look: "smoke"            // smoke | clear | classic (the cream cards)
+            property string surface: "cream"         // cream | fog | slate | cocoa (classic look)
+            property bool frost: true                // glass looks: blur the wallpaper behind the pill
+            property real frostBlur: 0.7
             property string accent: "peach"
             property int outline: 2
             property int shadow: 4

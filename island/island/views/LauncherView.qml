@@ -135,7 +135,7 @@ Item {
         icon: "search"
         placeholder: "Apps   = math   ! web   / files"
         offset: Theme.shadow
-        fill: Theme.base
+        fill: Theme.glass ? Theme.sunk : Theme.base
 
         onKeyPressed: e => {
             if (e.key === Qt.Key_Down || e.key === Qt.Key_Tab) { root.move(1); e.accepted = true; }
@@ -171,6 +171,8 @@ Item {
             offset: sel ? Theme.shadow : 0
             fill: sel ? Theme.accent : "transparent"
             borderWidth: sel ? Theme.outline : 0
+            borderColor: sel ? Theme.edge(Theme.accent) : Theme.line
+            lit: sel
 
             IconImage {
                 id: appIcon

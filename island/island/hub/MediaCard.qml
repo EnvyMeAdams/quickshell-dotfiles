@@ -141,8 +141,8 @@ Card {
                         width: 9
                         height: 9 + ((Visualizer.bars[index] ?? 0) / 100) * 21
                         radius: 4.5
-                        color: Theme.cycle[index % Theme.cycle.length]
-                        border.width: 1
+                        color: Theme.strong(Theme.cycle[index % Theme.cycle.length])
+                        border.width: Theme.glass ? 0 : 1
                         border.color: Theme.line
                         Behavior on height { NumberAnimation { duration: 60 } }
                     }

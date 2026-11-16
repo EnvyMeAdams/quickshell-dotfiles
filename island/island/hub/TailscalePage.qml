@@ -23,7 +23,7 @@ Item {
         visible: !root.helpOpen
         width: parent.width
         height: 66 + offset
-        fill: Tailscale.up ? Qt.tint(Theme.card, Qt.rgba(root.aqua.r, root.aqua.g, root.aqua.b, 0.45)) : Theme.card
+        fill: Tailscale.up ? Theme.wash(root.aqua, 0.45) : Theme.card
 
         Rectangle {
             id: bubble

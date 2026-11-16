@@ -26,8 +26,24 @@ Singleton {
         cocoa: { base: "#2a2421", card: "#342c28", sunk: "#221d1a", hover: "#3d3430",
                  ink: "#f1e3d6", sub: "#b3a194", line: "#0e0b0a", shade: "#0e0b0a" }
     })
-    readonly property var m: modes[Config.s.surface] ?? modes.cream
-    readonly property bool dark: ["slate", "cocoa", "midnight"].includes(Config.s.surface)
+    // Look: "smoke" (dark tinted glass, the default), "clear" (nearly clear
+    // glass with a bright rim) or "classic" (the cream-and-ink cards above).
+    // Glass surfaces are all see-through; anything painted with a solid colour
+    // (the pastels, the accent) goes through tint() so it sits in the glass.
+    readonly property string look: ["smoke", "clear", "classic"].includes(Config.s.look) ? Config.s.look : "smoke"
+    readonly property bool glass: look !== "classic"
+    readonly property var glassModes: ({
+        smoke: { base: Qt.rgba(0.065, 0.072, 0.098, 0.62), card: Qt.rgba(1, 1, 1, 0.06), sunk: Qt.rgba(1, 1, 1, 0.11),
+                 hover: Qt.rgba(1, 1, 1, 0.11), ink: "#f4f5f8", sub: Qt.rgba(0.957, 0.961, 0.973, 0.66),
+                 line: Qt.rgba(1, 1, 1, 0.12), rim: Qt.rgba(1, 1, 1, 0.24), shade: "transparent",
+                 knob: "#eceef2", onPastel: "#fbf7f3" },
+        clear: { base: Qt.rgba(0.08, 0.09, 0.11, 0.26), card: Qt.rgba(1, 1, 1, 0.10), sunk: Qt.rgba(1, 1, 1, 0.20),
+                 hover: Qt.rgba(1, 1, 1, 0.16), ink: "#ffffff", sub: Qt.rgba(1, 1, 1, 0.80),
+                 line: Qt.rgba(1, 1, 1, 0.30), rim: Qt.rgba(1, 1, 1, 0.62), shade: "transparent",
+                 knob: "#ffffff", onPastel: "#15171c" }
+    })
+    readonly property var m: glass ? glassModes[look] : (modes[Config.s.surface] ?? modes.cream)
+    readonly property bool dark: glass || ["slate", "cocoa", "midnight"].includes(Config.s.surface)
 
     readonly property color base:  m.base
     readonly property color card:  m.card
@@ -37,29 +53,78 @@ Singleton {
     readonly property color sub:   m.sub
     readonly property color line:  m.line
     readonly property color shade: m.shade
-    readonly property color onPastel: "#1e1916"
+    readonly property color onPastel: glass ? m.onPastel : "#1e1916"
+    // the island's outer glass (pill, power menu, popups); inner cards use `card`
+    readonly property color panel: glass ? m.base : m.card
+    readonly property color rim:   glass ? m.rim : "transparent"
+    readonly property color knob:  glass ? m.knob : m.card
+    // text / icons on a strong() colour (a full pastel on Smoked, white on Clear)
+    readonly property color onStrong: glass ? (look === "clear" ? "#15171c" : "#1e1916") : onPastel
+    // outlines that must stay visible on glass (battery bodies, nubs)
+    readonly property color stroke: glass ? m.sub : m.line
 
-    readonly property var pastels: ({
+    // A solid colour (pastel / accent) as it sits in the glass: on Smoked it
+    // keeps its hue at 30% so the dark glass shows through, on Clear it turns
+    // milky-light (dark text goes on it). See-through colours pass straight
+    // through, so tint() is safe to apply twice. Classic is untouched.
+    function tint(c) {
+        if (!glass || c.a < 0.99) return c;
+        if (look === "clear") return Qt.rgba(0.35 * c.r + 0.65, 0.35 * c.g + 0.65, 0.35 * c.b + 0.65, 0.92);
+        return Qt.rgba(c.r, c.g, c.b, 0.30);
+    }
+    // the outline for something filled with tint(c): a glowing edge in its hue
+    function edge(c) {
+        if (!glass) return line;
+        // a glass surface (card, hover…) keeps the plain hairline
+        if (c.a < (look === "clear" ? 0.5 : 0.2)) return line;
+        if (look === "clear") return Qt.rgba(1, 1, 1, 0.75);
+        return Qt.rgba(c.r, c.g, c.b, 0.62);
+    }
+    // small solid marks (slider fills, bars, dots, progress): full colour on
+    // Smoked, white on Clear, unchanged on Classic. Takes tinted colours too.
+    function strong(c) {
+        if (!glass) return c;
+        return look === "clear" ? Qt.rgba(1, 1, 1, 1) : Qt.rgba(c.r, c.g, c.b, 1);
+    }
+    // a card washed with a colour (selected rows, "connected" cards)
+    function wash(c, amount) {
+        if (!glass) return Qt.tint(card, Qt.rgba(c.r, c.g, c.b, amount));
+        return look === "clear" ? Qt.rgba(1, 1, 1, 0.10 + amount * 0.35)
+                                : Qt.rgba(c.r, c.g, c.b, 0.06 + amount * 0.40);
+    }
+
+    // the real pastels; `pastels` below is them as they sit on the current look
+    readonly property var rawPastels: ({
         pink: "#f6a9a9", rose: "#f7c3d6", blush: "#f4c7c3", coral: "#f7a48b",
         peach: "#f8b984", apricot: "#f9cfa0", butter: "#f6e7a1", yellow: "#f1d27c",
         sage: "#cfd8b4", green: "#c2d69b", mint: "#b8e6cf", aqua: "#a8dadc",
         sky: "#bfe1f6", blue: "#a7c6ea", periwinkle: "#b9c2f2", lavender: "#c9c2f0",
         lilac: "#d6b8ea", mauve: "#e3b5d2", sand: "#e2c2a5", mocha: "#d4b8a8"
     })
+    readonly property var pastels: {
+        const out = {};
+        for (const k in rawPastels) {
+            const h = rawPastels[k];
+            out[k] = tint(Qt.rgba(parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255,
+                                  parseInt(h.slice(5, 7), 16) / 255, 1));
+        }
+        return out;
+    }
     readonly property var accentNames: ["pink", "rose", "blush", "coral", "peach", "apricot", "butter", "yellow",
                                         "sage", "green", "mint", "aqua", "sky", "blue", "periwinkle", "lavender",
                                         "lilac", "mauve", "sand", "mocha"]
     readonly property var cycle: [pastels.pink, pastels.rose, pastels.peach, pastels.yellow, pastels.green, pastels.blue, pastels.lilac]
     // "wallpaper" = picked from the current photo or video wallpaper
     readonly property bool autoAccent: Config.s.accent === "wallpaper"
-    readonly property color accent: autoAccent ? (AutoColor.ready ? AutoColor.color : pastels.peach)
-                                               : (pastels[Config.s.accent] ?? pastels.peach)
+    readonly property color accentRaw: autoAccent ? (AutoColor.ready ? AutoColor.color : rawPastels.peach)
+                                                  : (rawPastels[Config.s.accent] ?? rawPastels.peach)
+    readonly property color accent: tint(accentRaw)
     readonly property color mic: "#f39a4a"
     readonly property color camera: "#7fc46a"
     readonly property color danger: pastels.pink
 
-    readonly property int outline: Config.s.outline
-    readonly property int shadow: Config.s.shadow
+    readonly property int outline: glass ? 1 : Config.s.outline
+    readonly property int shadow: glass ? 0 : Config.s.shadow
     readonly property int radius: Config.s.radius
     readonly property string font: Config.s.fontFamily
     // icons ship with the config, so nothing has to be installed

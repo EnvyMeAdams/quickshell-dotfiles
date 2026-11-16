@@ -22,7 +22,7 @@ Card {
 
     width: parent ? parent.width : 400
     height: 62 + offset
-    fill: isDefault ? Qt.tint(Theme.card, Qt.rgba(tint.r, tint.g, tint.b, 0.35)) : Theme.card
+    fill: isDefault ? Theme.wash(tint, 0.35) : Theme.card
 
     // icon: app icon, or a pastel bubble for devices
     Item {

@@ -28,8 +28,8 @@ Item {
             width: Math.max(height, track.width * Math.max(0, Math.min(1, root.value)))
             height: parent.height
             radius: parent.radius
-            color: root.tint
-            border.width: Theme.outline
+            color: Theme.strong(root.tint)
+            border.width: Theme.glass ? 0 : Theme.outline
             border.color: Theme.line
             Behavior on width { enabled: !area.pressed; NumberAnimation { duration: 90 } }
         }

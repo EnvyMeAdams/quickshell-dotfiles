@@ -28,7 +28,7 @@ SPage {
             width: parent ? parent.width : 400
             height: 54 + offset
             fill: Awake.matchedRule && Awake.matchedRule.app === modelData.app
-                  ? Qt.tint(Theme.card, Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.4)) : Theme.card
+                  ? Theme.wash(Theme.accent, 0.4) : Theme.card
 
             PText {
                 x: 16

@@ -72,8 +72,8 @@ Card {
                         anchors.centerIn: parent
                         width: 21; height: 21; radius: 10.5
                         visible: parent.modelData.today
-                        color: Theme.pastels.green
-                        border.width: Theme.outline
+                        color: Theme.strong(Theme.pastels.green)
+                        border.width: Theme.glass ? 0 : Theme.outline
                         border.color: Theme.line
                     }
                     PText {
@@ -81,7 +81,7 @@ Card {
                         text: parent.modelData.day
                         font.pixelSize: 10
                         font.bold: parent.modelData.today
-                        color: parent.modelData.today ? Theme.onPastel : Theme.ink
+                        color: parent.modelData.today ? Theme.onStrong : Theme.ink
                         opacity: parent.modelData.inMonth ? 1 : 0.3
                     }
                 }

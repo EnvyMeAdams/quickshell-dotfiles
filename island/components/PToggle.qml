@@ -13,7 +13,7 @@ Rectangle {
     radius: height / 2
     color: checked ? tint : Theme.sunk
     border.width: Theme.outline
-    border.color: Theme.line
+    border.color: checked ? Theme.edge(tint) : Theme.line
     Behavior on color { ColorAnimation { duration: 140 } }
 
     Rectangle {
@@ -22,8 +22,9 @@ Rectangle {
         radius: width / 2
         y: 4
         x: root.checked ? root.width - width - 4 : 4
-        color: Theme.card
-        border.width: Theme.outline
+        // Clear's "on" track is milky-light, so its knob goes dark
+        color: Theme.look === "clear" && root.checked ? Theme.onPastel : Theme.knob
+        border.width: Theme.glass ? 0 : Theme.outline
         border.color: Theme.line
         Behavior on x { NumberAnimation { duration: Theme.dur(180); easing.type: Easing.OutBack } }
     }

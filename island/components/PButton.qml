@@ -17,6 +17,8 @@ Card {
     signal rightClicked()
 
     fill: checked ? tint : (hovered ? Theme.hover : Theme.card)
+    borderColor: checked ? Theme.edge(tint) : Theme.line
+    lit: !checked
     pressed: area.pressed && Config.s.pressEffect
     radius: Math.min(Theme.radius, faceHeight / 2)
     implicitWidth: Math.max(faceHeight, row.implicitWidth + pad * 2) + offset

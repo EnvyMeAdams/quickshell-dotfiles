@@ -10,7 +10,7 @@ Item {
 
     readonly property var categories: [
         { label: "Appearance", icon: "palette", tint: Theme.pastels.pink, comp: appearanceC,
-          opts: ["Surface", "Dark Mode", "Grey", "Accent", "Outline", "Shadow", "Corners", "Font", "Press Effect"] },
+          opts: ["Look", "Glass", "Smoked", "Clear", "Classic", "Frost", "Blur", "Surface", "Dark Mode", "Grey", "Accent", "Outline", "Shadow", "Corners", "Font", "Press Effect"] },
         { label: "Motion", icon: "animation", tint: Theme.pastels.peach, comp: motionC,
           opts: ["Speed", "Springy", "Jiggle"] },
         { label: "Pill", icon: "rounded_corner", tint: Theme.pastels.yellow, comp: pillC,
@@ -134,7 +134,20 @@ Item {
         id: appearanceC
         SPage {
             title: "Appearance"
-            SurfacePicker {}
+            LookPicker {}
+            SToggle {
+                visible: Theme.glass
+                label: "Frost"
+                hint: "Blurs the wallpaper behind the island's glass"
+                key: "frost"
+            }
+            SSlider {
+                visible: Theme.glass && Config.s.frost
+                label: "Frost Strength"
+                key: "frostBlur"; from: 0.2; to: 1; step: 0.05
+            }
+            // the cream-and-ink surfaces only belong to Classic
+            SurfacePicker { visible: !Theme.glass }
             SLink {
                 icon: "palette"
                 label: "Accent"
@@ -142,8 +155,8 @@ Item {
                 tint: Theme.accent
                 onClicked: stack.push(accentC)
             }
-            SSlider { label: "Outline"; key: "outline"; from: 0; to: 4; step: 1; suffix: "px" }
-            SSlider { label: "Shadow"; key: "shadow"; from: 0; to: 8; step: 1; suffix: "px" }
+            SSlider { visible: !Theme.glass; label: "Outline"; key: "outline"; from: 0; to: 4; step: 1; suffix: "px" }
+            SSlider { visible: !Theme.glass; label: "Shadow"; key: "shadow"; from: 0; to: 8; step: 1; suffix: "px" }
             SSlider { label: "Corners"; key: "radius"; from: 4; to: 24; step: 1; suffix: "px" }
             SText { label: "Font"; key: "fontFamily"; placeholder: "JetBrains Mono" }
             SToggle { label: "Press Effect"; key: "pressEffect" }

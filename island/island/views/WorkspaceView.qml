@@ -49,7 +49,7 @@ Item {
                 width: current ? 22 : 9
                 height: 9
                 radius: 4.5
-                color: current ? Theme.accent : Theme.sunk
+                color: current ? Theme.strong(Theme.accent) : Theme.sunk
                 border.width: 1
                 border.color: Theme.line
                 Behavior on width { NumberAnimation { duration: Theme.dur(200); easing.type: Easing.OutBack } }

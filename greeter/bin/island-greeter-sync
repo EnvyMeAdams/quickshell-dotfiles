@@ -29,7 +29,7 @@ FILES = os.path.join(DEST, "files")
 THUMBS = os.path.join(HOME, ".cache/island/thumbs")
 
 # settings the login screen understands (same names as the island)
-KEEP = ["surface", "accent", "outline", "shadow", "radius", "fontFamily", "pressEffect",
+KEEP = ["look", "frost", "frostBlur", "surface", "accent", "outline", "shadow", "radius", "fontFamily", "pressEffect",
         "animSpeed", "use24h", "showSeconds", "userName", "lockBgKind", "lockDisplays",
         "lockAnim", "lockGlass", "glassBlur", "glassTint"]
 

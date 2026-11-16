@@ -19,8 +19,8 @@ Item {
         visible: root.low || (root.on && Battery.charging)
         radius: height / 2
         color: root.low ? Theme.pastels.pink : Theme.pastels.green
-        border.width: 1.5
-        border.color: Theme.line
+        border.width: Theme.glass ? 1 : 1.5
+        border.color: Theme.edge(color)
     }
 
     Row {

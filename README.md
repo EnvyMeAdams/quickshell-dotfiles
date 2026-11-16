@@ -1,8 +1,14 @@
 # quickshell-dotfiles
 
-A cream-and-ink pastel **dynamic island** for Wayland, built in
+A liquid-glass **dynamic island** for Wayland, built in
 [Quickshell](https://quickshell.org), plus a matching **login screen** for
 greetd. Works on **Hyprland** and **MangoWM**.
+
+Three looks in Settings → Appearance: **Smoked Glass** (the default: dark
+tinted glass, your accent glows on whatever is switched on), **Clear Glass**
+(nearly clear, bright rim) and **Classic** (the original cream-and-ink cards).
+The glass frosts your wallpaper behind it (Frost, on by default); video
+wallpapers use their cached still.
 
 > This project is vibe-coded: written with an AI assistant and tested by hand.
 > MangoWM support hasn't been tested on a real MangoWM machine yet.

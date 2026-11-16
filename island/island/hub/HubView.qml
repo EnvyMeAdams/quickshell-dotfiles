@@ -55,8 +55,8 @@ Item {
                     anchors.top: parent.top
                     anchors.margins: 4
                     width: 8; height: 8; radius: 4
-                    color: Theme.pastels.pink
-                    border.width: 1
+                    color: Theme.strong(Theme.pastels.pink)
+                    border.width: Theme.glass ? 0 : 1
                     border.color: Theme.line
                 }
             }

@@ -31,8 +31,9 @@ Item {
 
             width: 140 + offset
             height: list.height
-            offset: sel ? Theme.shadow : 2
+            offset: Theme.glass ? 0 : sel ? Theme.shadow : 2
             fill: sel ? Theme.accent : (area.containsMouse ? Theme.hover : Theme.card)
+            borderColor: sel ? Theme.edge(Theme.accent) : Theme.line
 
             IconImage {
                 id: ic

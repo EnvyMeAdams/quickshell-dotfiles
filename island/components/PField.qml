@@ -39,8 +39,8 @@ Card {
         font.family: Theme.font
         font.pixelSize: 13
         color: Theme.ink
-        selectionColor: Theme.accent
-        selectedTextColor: Theme.onPastel
+        selectionColor: Theme.strong(Theme.accent)
+        selectedTextColor: Theme.onStrong
         selectByMouse: true
         clip: true
         echoMode: root.password ? TextInput.Password : TextInput.Normal

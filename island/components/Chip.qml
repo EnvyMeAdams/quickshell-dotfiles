@@ -14,7 +14,7 @@ Rectangle {
     radius: height / 2
     color: fill
     border.width: Math.max(1, Theme.outline - 0.5)
-    border.color: Theme.line
+    border.color: Theme.edge(fill)
     Behavior on color { ColorAnimation { duration: 140 } }
 
     PText {

@@ -17,6 +17,7 @@ Card {
 
     height: 64 + offset
     fill: active ? tint : (area.containsMouse ? Theme.hover : Theme.card)
+    borderColor: active ? Theme.edge(tint) : Theme.line
     pressed: area.pressed && Config.s.pressEffect
 
     Rectangle {

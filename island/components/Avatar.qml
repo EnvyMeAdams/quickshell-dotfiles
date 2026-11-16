@@ -18,7 +18,7 @@ Item {
         radius: width / 2
         color: root.fill
         border.width: Theme.outline
-        border.color: Theme.line
+        border.color: Theme.edge(root.fill)
 
         PText {
             anchors.centerIn: parent

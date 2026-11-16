@@ -107,7 +107,9 @@ Item {
         width: root.target.width + Theme.shadow
         height: root.target.height + Theme.shadow
         radius: root.roundPill ? root.target.height / 2 : 26
-        fill: Theme.card
+        fill: Theme.panel
+        frost: true
+        frostScreen: root.screenName
 
         Behavior on width {
             SpringAnimation {

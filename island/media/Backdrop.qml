@@ -16,9 +16,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         gradient: Gradient {
-            GradientStop { position: 0.0; color: Theme.pastels.blue }
-            GradientStop { position: 0.55; color: Theme.pastels.peach }
-            GradientStop { position: 1.0; color: Theme.base }
+            GradientStop { position: 0.0; color: Theme.rawPastels.blue }
+            GradientStop { position: 0.55; color: Theme.rawPastels.peach }
+            GradientStop { position: 1.0; color: Theme.glass ? "#20182c" : Theme.base }
         }
     }
 
