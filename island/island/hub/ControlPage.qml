@@ -1,4 +1,5 @@
 import QtQuick
+import Quickshell
 import qs.services
 import qs.theme
 import qs.components
@@ -148,6 +149,70 @@ Item {
                     tint: Theme.pastels.coral
                     onMoved: v => NightLight.setWarmth(v)
                     onIconClicked: NightLight.toggle()
+                }
+            }
+        }
+
+        // Display scaling: one row per display, the name only shows with 2+
+        Card {
+            width: parent.width
+            height: scales.implicitHeight + 28 + offset
+
+            Column {
+                id: scales
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.margins: 14
+                spacing: 10
+
+                Row {
+                    spacing: 8
+                    PIcon {
+                        name: "aspect_ratio"
+                        size: 18
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    PText {
+                        text: "Scaling"
+                        font.bold: true
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                Repeater {
+                    model: Quickshell.screens
+                    delegate: Column {
+                        id: disp
+                        required property var modelData
+                        readonly property real now: Scale.current(modelData.name)
+                        width: scales.width
+                        spacing: 6
+
+                        PText {
+                            visible: Quickshell.screens.length > 1
+                            text: disp.modelData.name
+                            font.pixelSize: 11
+                            opacity: 0.7
+                        }
+                        Flow {
+                            width: parent.width
+                            spacing: 6
+                            Repeater {
+                                model: Scale.options
+                                delegate: PButton {
+                                    required property real modelData
+                                    text: Scale.label(modelData)
+                                    faceHeight: 28
+                                    offset: 3
+                                    pad: 10
+                                    checked: Math.abs(disp.now - modelData) < 0.01
+                                    tint: Theme.pastels.blue
+                                    onClicked: Scale.set(disp.modelData.name, modelData)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
