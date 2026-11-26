@@ -185,7 +185,7 @@ Item {
                     delegate: Column {
                         id: disp
                         required property var modelData
-                        readonly property real now: Scale.current(modelData.name)
+                        readonly property real now: DisplayScale.current(modelData.name)
                         width: scales.width
                         spacing: 6
 
@@ -199,16 +199,16 @@ Item {
                             width: parent.width
                             spacing: 6
                             Repeater {
-                                model: Scale.options
+                                model: DisplayScale.options
                                 delegate: PButton {
                                     required property real modelData
-                                    text: Scale.label(modelData)
+                                    text: DisplayScale.label(modelData)
                                     faceHeight: 28
                                     offset: 3
                                     pad: 10
                                     checked: Math.abs(disp.now - modelData) < 0.01
                                     tint: Theme.pastels.blue
-                                    onClicked: Scale.set(disp.modelData.name, modelData)
+                                    onClicked: DisplayScale.set(disp.modelData.name, modelData)
                                 }
                             }
                         }
