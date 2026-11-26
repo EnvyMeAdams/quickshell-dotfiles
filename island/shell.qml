@@ -11,7 +11,7 @@ ShellRoot {
     id: root
 
     // make sure background services start even before anything is shown
-    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight, FingerprintWatch, Tailscale, Spotify]
+    readonly property var keepAlive: [Compositor, Notifs, Media, Audio, Privacy, Network, Wallpaper, Recorder, AutoColor, Awake, Battery, Brightness, ControlActions, NightLight, Scale, FingerprintWatch, Tailscale, Spotify]
 
     Variants {
         model: Quickshell.screens
